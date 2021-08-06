@@ -1,0 +1,12 @@
+data_txt <- as.data.frame(word,stringAsFactors=F)  ##데이터프레임형태로 만들기
+data_txt <- sapply(data_txt,str_remove_all,'\\s+') 
+data_txt <- as.data.frame(data_txt,stringsAsFactors = FALSE)
+colnames(data_txt) <- c('content') ###위 세줄은 텍스트내에 공백제거 하는 것
+data_txt$content[nchar(x = data_txt$content) >=2] #두글자 이상만 포함되게 하기
+Parsed_data <- r_parser_r(data_txt$content,language = "ko",useEn = T) # 형태소 분석 작업
+corp <- VCorpus(VectorSource(Parsed_data)) #corpus(말뭉치) 생성
+corp <-  tm_map(corp, removePunctuation) #특문 제거(숫자제거, 다른 변형등등도 있긴합니다) 
+dtm_corp<- DocumentTermMatrix(corp) #문서행렬 생성
+dtm_corp %>% as.matrix() %>% colSums()-> wordFreq #빈도 확인차 만든 함수
+wordFreq <- wordFreq[order(wordFreq, decreasing = TRUE)] #빈도 확인
+head(x = wordFreq, n = 20) #상위 n개의 빈도수 확인
