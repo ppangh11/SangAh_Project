@@ -1,0 +1,140 @@
+---
+title: "Homework 6"
+author: "Seunggyun Shin"
+date: '2021 5 3 '
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**Problem 1**
+```{r}
+library(faraway)
+data("butterfat")
+```
+
+(a)
+```{r}
+boxplot(Butterfat ~ Breed, data = butterfat, outline  = FALSE)
+stripchart(Butterfat ~ Breed, data = butterfat, vertical = TRUE, col = c(1:5), add = TRUE)
+
+
+boxplot(Butterfat ~ Age, data = butterfat, outline = FALSE)
+stripchart(Butterfat ~ Age, data = butterfat,
+           vertical = TRUE, col = c(1:2), add = TRUE)
+
+
+interaction.plot(butterfat$Breed, butterfat$Age, butterfat$Butterfat, ylab = "Mean of Butterfat", xlab = "Breed", trace.label = "Age", col = c(1,3))
+
+```
+
+(b)
+```{r}
+mod1 = lm(Butterfat ~ Breed*Age, data = butterfat)
+summary(mod1)
+
+summary(aov(mod1))
+```
+There is no significant evidence that there is interaction between Breed and Age with this model.
+
+```{r}
+par(mfrow = c(2,2))
+qqnorm(resid(mod1))
+qqline(resid(mod1))
+plot(mod1$fitted, mod1$residuals,
+     xlab = "Fitted", ylab = "Residuals")
+```
+
+```{r}
+library(lmtest)
+library(MASS)
+```
+
+```{r}
+boxcox(mod1)
+```
+
+```{r}
+shapiro.test(resid(mod1))
+bptest(mod1)
+```
+The model does not pass both tests, so transformation is necessary.
+
+```{r}
+mod1_2 = lm(log(Butterfat) ~ Breed*Age, data = butterfat)
+```
+
+(c)
+```{r}
+anova(mod1_2)
+```
+
+According to the ANOVA test, only the variable Breed is statistically significant.
+
+
+(d)
+```{r}
+par(mfrow = c(2,2))
+plot(mod1_2)
+```
+
+```{r}
+shapiro.test(resid(mod1_2))
+bptest(mod1_2)
+```
+
+Now the model passes the tests for assumptions.
+
+(e)
+```{r}
+summary(mod1_2)
+```
+
+Breed Jersey is the best breed and Breed Guernsey is the second best.However, it is hard to tell this is clearly superior as we cannot tell if the differences of interaction are significant or not in this model.
+
+
+**Problem 2**
+```{r}
+data("morley")
+```
+
+(a)
+```{r}
+mod2 = lm(Speed ~ Run, data = morley)
+anova(mod2)
+```
+
+Since the p-value of Run is 0.7988, we fail to reject null hypothesis and conclude that we cannot tell there is a significant difference between Runs.
+
+(b)
+```{r}
+mod2_all = lm(Speed ~ Run + Expt, data = morley)
+```
+
+```{r}
+(summary(mod2)$sigma / summary(mod2_all)$sigma)^2
+```
+This implies that CRD would require 12 percent more observations to obtain the same level of precision as an RCBD.
+
+**Problem 3**
+```{r}
+data(alfalfa)
+```
+
+```{r}
+mod3 = lm(yield ~ inoculum + shade + irrigation, data = alfalfa)
+anova(mod3)
+```
+
+P-values of Variables inoculum and shade is less than 0.05. So, they are significant.
+
+(b)
+
+```{r}
+TukeyHSD(aov(mod3))$inoculum
+```
+E-A, E-B, E-C, E-D does not include 0 in their interval. So, E of the inoculum which is the treatment factor is significantly different.
