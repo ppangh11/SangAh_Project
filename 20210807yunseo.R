@@ -17,8 +17,8 @@ project_xy <- project_df[,c(18,23)]  #일정심각도
 # prop.table(table(project_xy$일정심각도))
 
 # 금액심각도 비율
-table(project_xy[,2])
-prop.table(table(project_xy$금액심각도))
+#table(project_xy[,2])
+#prop.table(table(project_xy$금액심각도))
 
 names(project_xy)<-c("text","type")
 
@@ -44,27 +44,153 @@ lapply(docs, content)
 # 모두 소문자로 바꾸는 작업
 docs <- tm_map(docs, content_transformer(tolower))
 
+# 특정 단어를 다른 형태로 바꾸는 작업
+changeWord <- content_transformer(function(x, pattern, changepattern){return(gsub(pattern, changepattern, x))})
+docs <- tm_map(docs,changeWord,"u/g","ug")
+docs <- tm_map(docs,changeWord,"plot plan","PlotPlan")  ##
+docs <- tm_map(docs,changeWord,"펌프","pump")
+docs <- tm_map(docs,changeWord,"요청","proposal")
+docs <- tm_map(docs,changeWord,"요구","proposal")
+#docs <- tm_map(docs,changeWord,"vendor print","VenderPrint") #vp
+docs <- tm_map(docs,changeWord,"lines","line")
+docs <- tm_map(docs,changeWord,"라인","line")
+docs <- tm_map(docs,changeWord,"v/p","vp")
+docs <- tm_map(docs,changeWord,"p.c","pc")
+docs <- tm_map(docs,changeWord,"location","위치")
+docs <- tm_map(docs,changeWord,"change","변경")
+docs <- tm_map(docs,changeWord,"sheets","sheet")
+docs <- tm_map(docs,changeWord,"conn.","conn")
+
+# 화살표 처리
+#docs <- tm_map(docs,changeWord,"--->","증가")
+
+# rev 처리 2)
+#docs <- tm_map(docs,changeWord,"rev0","REV")
+#docs <- tm_map(docs,changeWord,"rev1","REV")
+#docs <- tm_map(docs,changeWord,"revc","REV")
+#docs <- tm_map(docs,changeWord,"revb","REV")
+
+
 # 중요한 단어를 잘라내기 위해 양쪽에 띄어쓰기 삽입: ex)"변경" -> " 변경 "
 plusSpace <- content_transformer(function(x, pattern){return(gsub(pattern,paste(" ",pattern," ",sep=""),x))})
-docs <- tm_map(docs, plusSpace, c("변경"))
-docs <- tm_map(docs, plusSpace, c("발생"))
-docs <- tm_map(docs, plusSpace, c("추가"))
-docs <- tm_map(docs, plusSpace, c("사업주"))
-docs <- tm_map(docs, plusSpace, c("계약"))
+docs <- tm_map(docs, plusSpace, c("line"))
+docs <- tm_map(docs, plusSpace, c("vp"))
+docs <- tm_map(docs, plusSpace, c("pc"))
 docs <- tm_map(docs, plusSpace, c("위치"))
-docs <- tm_map(docs, plusSpace, c("변동"))
-docs <- tm_map(docs, plusSpace, c("u/g"))
+docs <- tm_map(docs, plusSpace, c("ug"))
+docs <- tm_map(docs, plusSpace, c("t-supprot"))
+docs <- tm_map(docs, plusSpace, c("PlotPlan"))
+docs <- tm_map(docs, plusSpace, c("valve"))
+docs <- tm_map(docs, plusSpace, c("pump"))
+docs <- tm_map(docs, plusSpace, c("burner"))
+docs <- tm_map(docs, plusSpace, c("proposal"))
+docs <- tm_map(docs, plusSpace, c("steel"))
+docs <- tm_map(docs, plusSpace, c("vender"))   ##
 docs <- tm_map(docs, plusSpace, c("p&id"))
+docs <- tm_map(docs, plusSpace, c("bracing"))
+docs <- tm_map(docs, plusSpace, c("tie-in"))
+docs <- tm_map(docs, plusSpace, c("hb"))
+docs <- tm_map(docs, plusSpace, c("epdm"))
+docs <- tm_map(docs, plusSpace, c("pbr"))
+docs <- tm_map(docs, plusSpace, c("ifc"))
+docs <- tm_map(docs, plusSpace, c("gre"))
+docs <- tm_map(docs, plusSpace, c("ibc"))
+docs <- tm_map(docs, plusSpace, c("제작장"))
 docs <- tm_map(docs, plusSpace, c("발주처"))
-docs <- tm_map(docs, plusSpace, c("재설계"))
-docs <- tm_map(docs, plusSpace, c("부족"))
-docs <- tm_map(docs, plusSpace, c("요청"))
+docs <- tm_map(docs, plusSpace, c("배관"))
+docs <- tm_map(docs, plusSpace, c("상이"))
+docs <- tm_map(docs, plusSpace, c("설계"))
+docs <- tm_map(docs, plusSpace, c("보완"))
+docs <- tm_map(docs, plusSpace, c("사업주"))
+docs <- tm_map(docs, plusSpace, c("간섭"))
+docs <- tm_map(docs, plusSpace, c("변경"))
+docs <- tm_map(docs, plusSpace, c("추가"))
 docs <- tm_map(docs, plusSpace, c("증가"))
+docs <- tm_map(docs, plusSpace, c("부족"))
+docs <- tm_map(docs, plusSpace, c("bop"))
+docs <- tm_map(docs, plusSpace, c("rtrp"))
+docs <- tm_map(docs, plusSpace, c("stbd"))
+docs <- tm_map(docs, plusSpace, c("diverter"))
+docs <- tm_map(docs, plusSpace, c("ppb"))
+docs <- tm_map(docs, plusSpace, c("edg"))
+docs <- tm_map(docs, plusSpace, c("revamping"))
+docs <- tm_map(docs, plusSpace, c("철거"))
 docs <- tm_map(docs, plusSpace, c("설치"))
-docs <- tm_map(docs, plusSpace, c("토목"))
-docs <- tm_map(docs, plusSpace, c("펌프"))
-docs <- tm_map(docs, plusSpace, c("pump"))  # 나중에 하나로 통일
+docs <- tm_map(docs, plusSpace, c("변형"))
+docs <- tm_map(docs, plusSpace, c("발생"))
+docs <- tm_map(docs, plusSpace, c("보강"))
+docs <- tm_map(docs, plusSpace, c("수정"))
+docs <- tm_map(docs, plusSpace, c("처리"))
+docs <- tm_map(docs, plusSpace, c("barite"))
+docs <- tm_map(docs, plusSpace, c("bentonite"))
+docs <- tm_map(docs, plusSpace, c("cement"))
+docs <- tm_map(docs, plusSpace, c("manifold"))
+docs <- tm_map(docs, plusSpace, c("사항"))
+docs <- tm_map(docs, plusSpace, c("배출"))
+docs <- tm_map(docs, plusSpace, c("검토"))
+docs <- tm_map(docs, plusSpace, c("반영"))
+docs <- tm_map(docs, plusSpace, c("방법"))
+docs <- tm_map(docs, plusSpace, c("별도"))
+docs <- tm_map(docs, plusSpace, c("필요"))
+docs <- tm_map(docs, plusSpace, c("고려"))
+docs <- tm_map(docs, plusSpace, c("작업자"))
+docs <- tm_map(docs, plusSpace, c("곤란"))
+docs <- tm_map(docs, plusSpace, c("우려"))
+#docs <- tm_map(docs, plusSpace, c("ballast"))
+docs <- tm_map(docs, plusSpace, c("handling"))
+docs <- tm_map(docs, plusSpace, c("급수"))
+docs <- tm_map(docs, plusSpace, c("격벽"))
+docs <- tm_map(docs, plusSpace, c("확보"))
+docs <- tm_map(docs, plusSpace, c("오동작"))
+docs <- tm_map(docs, plusSpace, c("배치"))
+docs <- tm_map(docs, plusSpace, c("위험"))
+docs <- tm_map(docs, plusSpace, c("잠재"))
+docs <- tm_map(docs, plusSpace, c("회피"))
+docs <- tm_map(docs, plusSpace, c("cable"))
+docs <- tm_map(docs, plusSpace, c("불명확"))
+docs <- tm_map(docs, plusSpace, c("계산"))
+docs <- tm_map(docs, plusSpace, c("부재"))
+docs <- tm_map(docs, plusSpace, c("수량"))
+docs <- tm_map(docs, plusSpace, c("deck"))
+docs <- tm_map(docs, plusSpace, c("p-tank"))
+docs <- tm_map(docs, plusSpace, c("mud"))
+docs <- tm_map(docs, plusSpace, c("지진"))
+docs <- tm_map(docs, plusSpace, c("적용"))
+docs <- tm_map(docs, plusSpace, c("하중"))
+docs <- tm_map(docs, plusSpace, c("dwg"))
+docs <- tm_map(docs, plusSpace, c("air"))
+docs <- tm_map(docs, plusSpace, c("unit"))
+docs <- tm_map(docs, plusSpace, c("conn"))
+docs <- tm_map(docs, plusSpace, c("steet"))
+docs <- tm_map(docs, plusSpace, c("psv"))
+docs <- tm_map(docs, plusSpace, c("도면"))
+docs <- tm_map(docs, plusSpace, c("공기"))  #공기 압축기라는 단어 존재
+docs <- tm_map(docs, plusSpace, c("구매"))
+docs <- tm_map(docs, plusSpace, c("계약"))
+docs <- tm_map(docs, plusSpace, c("결여"))
+docs <- tm_map(docs, plusSpace, c("가능"))
+docs <- tm_map(docs, plusSpace, c("support"))
+docs <- tm_map(docs, plusSpace, c("structure"))
+docs <- tm_map(docs, plusSpace, c("strainer"))
+docs <- tm_map(docs, plusSpace, c("study"))
+docs <- tm_map(docs, plusSpace, c("근거"))
+docs <- tm_map(docs, plusSpace, c("p/f"))
+docs <- tm_map(docs, plusSpace, c("liquids"))
+docs <- tm_map(docs, plusSpace, c("Stedccture"))
+docs <- tm_map(docs, plusSpace, c("chang"))
+docs <- tm_map(docs, plusSpace, c("design"))
 
+
+
+# reb 어쩌지 => 근데 얘네끼리 별 차이 없어보임 (거의 다 안전으로 분류, 그냥 하나로 합칠까요?)
+# 1)
+docs <- tm_map(docs, plusSpace, c("rev0"))
+docs <- tm_map(docs, plusSpace, c("revc"))
+docs <- tm_map(docs, plusSpace, c("rev1"))
+docs <- tm_map(docs, plusSpace, c("revb"))
+
+# 2)
+#docs <- tm_map(docs, plusSpace, c("REV"))
 
 
 
@@ -79,14 +205,23 @@ toSpace <- content_transformer(function(x, pattern){return(gsub(pattern," ",x))}
 docs <- tm_map(docs, toSpace, c("의"))
 docs <- tm_map(docs, toSpace, c("에는"))
 docs <- tm_map(docs, toSpace, c("을"))
+docs <- tm_map(docs, toSpace, c("를"))
 docs <- tm_map(docs, toSpace, c("에대한"))
 docs <- tm_map(docs, toSpace, c("으로"))
 docs <- tm_map(docs, toSpace, c("하여"))
 docs <- tm_map(docs, toSpace, c("됨"))
 docs <- tm_map(docs, toSpace, c("로"))
+docs <- tm_map(docs, toSpace, c("에"))
 docs <- tm_map(docs, toSpace, c("으로"))
 docs <- tm_map(docs, toSpace, c("따라"))
 docs <- tm_map(docs, toSpace, c("따른"))
+docs <- tm_map(docs, toSpace, c("에서"))
+docs <- tm_map(docs, toSpace, c("대한"))
+docs <- tm_map(docs, toSpace, c("인한"))
+docs <- tm_map(docs, toSpace, c("되는"))
+docs <- tm_map(docs, toSpace, c("위해"))
+docs <- tm_map(docs, toSpace, c("위한"))
+docs <- tm_map(docs, toSpace, c("하고"))
 
 #" " 안에 제거할 문자를 입력하면, 그냥 제거됨.(띄어쓰기 상관없이)
 myRemove <- content_transformer(function(x, pattern){return(gsub(pattern, "", x))})
@@ -99,10 +234,12 @@ docs <- tm_map(docs, stripWhitespace) #공백제거
 
 
 # 입력한 단어 삭제(띄어쓰기 되어 있는 단어만)
-mystopwords <- c(c("변경", "되는","을", "를","하여","됨","등","에","위해","위한","by","and")) 
+mystopwords <- c(c("by","for","and")) 
 docs <- tm_map(docs, removeWords, mystopwords)
 
 
+# 임의로 삭제
+#  "--->", "/0)", "1)", "13", "16", "2)", "20--->21", "30%",
 
 
 # 필요하면 쓸 애들 (근데 영어에만 적용되는거 같기도 함.)
@@ -132,7 +269,7 @@ termfreq[tail(order(termfreq, decreasing=TRUE))]
 findFreqTerms(dtm, lowfreq=200)
 
 # 상관관계가 있는 단어를 찾아줌.
-findAssocs(dtm, c("변경","line","추가","size","locat","dwg"),c(0.20,0.25))
+findAssocs(dtm, c("line"),c(0.20,0.25))
 
 
 #워드 클라우드
@@ -145,13 +282,15 @@ set.seed(123)
 # y의 범주별로 워드 클라우드를 만들기
 # 행은 레코드, 열은 단어, value는 빈도수인 행렬 형태로 만들어야 함.
 hamproject <- as.matrix(dtm)
+
+
 rownames(hamproject) <- project_xy$type
 hamproject <- rowsum(hamproject, group=rownames(hamproject)) #범주별로 단어가 얼마나 등장하는지
 hamproject
 
-set.seed(123)
-windows(width=7, height=7)
-comparison.cloud(t(hamproject), colors=c("cornflowerblue","tomato","black"),title.size=2, title.colors=c("blue", "red","black"), title.bg.colors="wheat",rot.per=0, scale=c(5,0.4),max.words=200)
+#set.seed(123)
+#windows(width=7, height=7)
+#comparison.cloud(t(hamproject), colors=c("cornflowerblue","tomato","black"),title.size=2, title.colors=c("blue", "red","black"), title.bg.colors="wheat",rot.per=0, scale=c(5,0.4),max.words=200)
 
 
 #나이브베이즈: 범주형 예측변수
