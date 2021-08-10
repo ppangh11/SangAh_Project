@@ -320,10 +320,6 @@ x.test <- project_xy.dtm[-train,]
 
 
 
-x.train <- as.data.frame(read.csv("x.train.csv"))
-x.test <- as.data.frame(read.csv("x.test.csv"))
-
-
 set.seed(1234)
 knn_1 <- knn(train = x.train, test = x.test, cl = y.train, k = 5)
 
