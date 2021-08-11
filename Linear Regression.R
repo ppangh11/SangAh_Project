@@ -1,6 +1,8 @@
 ---
 title: "Linear Regression"
-output: html_document
+output:
+  html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -10,22 +12,22 @@ knitr::opts_chunk$set(echo = TRUE)
 1. traindata, testdata 분할
 
 ```{r}
-data1 <- read.csv("20210810.csv")[,-1]
+data1 <- read.csv("20210811.csv")[,-1]
 data<-read.csv("binary_df.csv")[,44]
 data <- cbind(data1,data)
 
 train <- sample(nrow(data), 0.8*nrow(data)) #랜덤으로 숫자배열
 train_dat <- data[train,] # traindata
-x.train <- train_dat[,c(1:88)] #traindata(독립변수)
-num.y.train <- train_dat[,90] #traindata(수치형종속변수)
-cat.y.train <- train_dat[,89] #traindata(범주형종속변수)
+x.train <- train_dat[,c(1:84)] #traindata(독립변수)
+num.y.train <- train_dat[,86] #traindata(수치형종속변수)
+cat.y.train <- train_dat[,85] #traindata(범주형종속변수)
 
 test_dat <- data[-train,] #testdata
-x.test <- test_dat[,c(1:88)] #testdata(종속변수없는거)
+x.test <- test_dat[,c(1:84)] #testdata(종속변수없는거)
 ```
 
 
-2. 일정심각도의 선형회귀모델 적합(AIC 기준, 변수선택법(forward, backward, both) 선택해서 direction = 자리에 넣으면 됩니다) 
+2. 일정심각도의 선형회귀모델 적합(AIC 기준, stepwise) 
 
 ```{r}
 library(olsrr)
@@ -60,5 +62,5 @@ for(i in c(1:212)){
 4. 오분류표로 정확도 확인
 
 ```{r}
-confusionMatrix(as.factor(a),as.factor(test_dat[,89])) #데이터 바뀌면 col 확인해서 col번호 바꿔줘야함
+confusionMatrix(as.factor(a),as.factor(test_dat[,85])) #데이터 바뀌면 col 확인해서 col번호 바꿔줘야함
 ```
