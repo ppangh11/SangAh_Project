@@ -50,7 +50,8 @@ confusionMatrix(as.factor(knn_1), as.factor(y.test))
 ###############박하림 코드수정########################
 
 data1 <- read.csv("20210811.csv")[,-1]
-data<-read.csv("binary_df.csv")[,44]
+#data<-read.csv("binary_df.csv")[,44]  #금액심각도  0.7547
+data<-read.csv("binary_df.csv")[,42]  #일정심각도  0.816
 data <- cbind(data1,data)
 
 train <- sample(nrow(data), 0.8*nrow(data)) #랜덤으로 숫자배열
