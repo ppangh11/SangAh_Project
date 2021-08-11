@@ -1,15 +1,15 @@
-data1 <- read.csv("20210810.csv")[,-1]
+data1 <- read.csv("20210811.csv")[,-1]
 data<-read.csv("binary_df.csv")[,44]
 data <- cbind(data1,data)
 
 train <- sample(nrow(data), 0.8*nrow(data)) #랜덤으로 숫자배열
 train_dat <- data[train,] # traindata
-x.train <- train_dat[,c(1:88)] #traindata(독립변수)
-num.y.train <- train_dat[,90] #traindata(수치형종속변수)
-cat.y.train <- train_dat[,89] #traindata(범주형종속변수)
+x.train <- train_dat[,c(1:84)] #traindata(독립변수)
+num.y.train <- train_dat[,86] #traindata(수치형종속변수)
+cat.y.train <- train_dat[,85] #traindata(범주형종속변수)
 
 test_dat <- data[-train,] #testdata
-x.test <- test_dat[,c(1:88)] #testdata(종속변수없는거)
+x.test <- test_dat[,c(1:84)] #testdata(종속변수없는거)
 
 
 model.svm <- svm(num.y.train~.,data=x.train) #SVM 모델 생성
@@ -32,4 +32,4 @@ for(i in c(1:212)){
   }
 } #예측한 수치 범주형변수로 바꾸기
 
-confusionMatrix(as.factor(a),as.factor(test_dat[,89])) #오분류표 확인
+confusionMatrix(as.factor(a),as.factor(test_dat[,85])) #오분류표 확인
