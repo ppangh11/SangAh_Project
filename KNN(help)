@@ -47,7 +47,7 @@ confusionMatrix(as.factor(knn_1), as.factor(y.test))
 
 
 
-##박하림 코멘트 및 수정
+###############박하림 코드수정########################
 
 data1 <- read.csv("20210811.csv")[,-1]
 data<-read.csv("binary_df.csv")[,44]
