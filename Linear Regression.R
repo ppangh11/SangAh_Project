@@ -28,6 +28,7 @@ x.test <- test_dat[,c(1:88)] #testdata(종속변수없는거)
 2. 일정심각도의 선형회귀모델 적합(AIC 기준, 변수선택법(forward, backward, both) 선택해서 direction = 자리에 넣으면 됩니다) 
 
 ```{r}
+library(olsrr)
 df_period <- lm(num.y.train~.,data=x.train)
 period_AIC <- stepAIC(df_period,direction = "forward")
 AIC_model <- period_AIC$model
