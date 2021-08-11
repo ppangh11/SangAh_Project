@@ -8,8 +8,8 @@ setwd("C:/Users/82104/Desktop/상아매니지먼트")
 library(readxl)
 
 project_df <- as.data.frame(read_excel("dataset.xlsx",skip=5)) #데이터불러오기
-#project_xy <- project_df[,c(18,23)]  #일정심각도 
-project_xy <- project_df[,c(18,26)]  #비용심각도
+project_xy <- project_df[,c(18,23)]  #일정심각도 
+#project_xy <- project_df[,c(18,26)]  #비용심각도
 
 
 # 일정심각도 비율
