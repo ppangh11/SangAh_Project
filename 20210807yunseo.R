@@ -1,5 +1,4 @@
 # 참고한 링크: https://www.youtube.com/watch?v=PvvrexFqFDU&t=292s
-# ~34분까지 내용
 
 
 setwd("C:/Users/82104/Desktop/상아매니지먼트")
@@ -7,7 +6,7 @@ setwd("C:/Users/82104/Desktop/상아매니지먼트")
 #데이터 불러오기
 library(readxl)
 
-project_df <- as.data.frame(read_excel("dataset.xlsx",skip=5)) #데이터불러오기
+project_df <- as.data.frame(read_excel("codeless.xlsx",skip=5)) #데이터불러오기
 project_xy <- project_df[,c(18,23)]  #일정심각도 
 #project_xy <- project_df[,c(18,26)]  #비용심각도
 
@@ -52,7 +51,6 @@ docs <- tm_map(docs,changeWord,"spectacle"," spec ")
 
 
 
-docs <- tm_map(docs,changeWord,"이동","변경")
 docs <- tm_map(docs,changeWord,"change","변경")
 docs <- tm_map(docs,changeWord,"conn.","conn")
 docs <- tm_map(docs,changeWord,"lines","line")
@@ -65,6 +63,9 @@ docs <- tm_map(docs,changeWord,"vp","v/p")
 docs <- tm_map(docs,changeWord,"라인","line")
 docs <- tm_map(docs,changeWord,"요구","proposal")
 docs <- tm_map(docs,changeWord,"requirement","proposal")
+docs <- tm_map(docs,changeWord,"데크","deck")
+docs <- tm_map(docs,changeWord,"파이프","pipe")
+docs <- tm_map(docs,changeWord,"systems","system")
 
 docs <- tm_map(docs,changeWord,"요청","proposal")
 docs <- tm_map(docs,changeWord,"펌프","pump")
@@ -85,11 +86,31 @@ docs <- tm_map(docs,changeWord,"connecting","CONNECT")
 docs <- tm_map(docs,changeWord,"connection","CONNECT")
 docs <- tm_map(docs,changeWord,"conn","CONNECT")
 docs <- tm_map(docs,changeWord,"funner","funnel")
+docs <- tm_map(docs,changeWord,"cordination","조정")
+docs <- tm_map(docs,changeWord,"document","계약")
 
+docs <- tm_map(docs,changeWord,"stairs"," STAIR ")
 
+docs <- tm_map(docs,changeWord,"air compressor"," aircomp ")
+docs <- tm_map(docs,changeWord,"air comp"," aircomp ")
+
+docs <- tm_map(docs,changeWord,"크기","size")
+
+docs <- tm_map(docs,changeWord,"tie-in"," TieIn ")
+docs <- tm_map(docs,changeWord,"p[.]c"," pc ")
+
+docs <- tm_map(docs,changeWord,"pcn"," PCN ")
+
+docs <- tm_map(docs,changeWord,"geo[.]"," geo ")
 
 # 화살표 처리
-#docs <- tm_map(docs,changeWord,"--->","증가")
+#docs <- tm_map(docs,changeWord,"\\d+(.*)--->(.*)\\d+"," 화살표숫자 ")
+#docs <- tm_map(docs,changeWord,"\\D+(.*)--->(.*)\\D+"," 화살표문자 ") #변경이 안되는 애도 있네요...
+#docs <- tm_map(docs,changeWord,"------>"," ------> ")
+#docs <- tm_map(docs,changeWord,"----->"," -----> ")
+#docs <- tm_map(docs,changeWord,"---->"," ----> ")
+#docs <- tm_map(docs,changeWord,"--->"," ---> ")
+
 
 # rev 처리 2)
 docs <- tm_map(docs,changeWord,"review","RV")
@@ -108,8 +129,11 @@ docs <- tm_map(docs,changeWord,"revb"," revision ")
 plusSpace <- content_transformer(function(x, pattern){return(gsub(pattern,paste(" ",pattern," ",sep=""),x))})
 #docs <- tm_map(docs, plusSpace, c("ballast"))
 docs <- tm_map(docs, plusSpace, c("3d"))
+docs <- tm_map(docs, plusSpace, c("30%"))
+docs <- tm_map(docs, plusSpace, c("60%"))
+docs <- tm_map(docs, plusSpace, c("90%"))
+
 docs <- tm_map(docs, plusSpace, c("acceleratino"))
-docs <- tm_map(docs, plusSpace, c("air"))
 docs <- tm_map(docs, plusSpace, c("analzer"))
 docs <- tm_map(docs, plusSpace, c("barite"))
 docs <- tm_map(docs, plusSpace, c("bentonite"))
@@ -148,6 +172,8 @@ docs <- tm_map(docs, plusSpace, c("funnel"))
 docs <- tm_map(docs, plusSpace, c("gate"))
 docs <- tm_map(docs, plusSpace, c("globe"))
 docs <- tm_map(docs, plusSpace, c("gre"))
+docs <- tm_map(docs, plusSpace, c("geo"))
+
 docs <- tm_map(docs, plusSpace, c("handling"))
 docs <- tm_map(docs, plusSpace, c("hb"))
 docs <- tm_map(docs, plusSpace, c("ibc"))
@@ -174,7 +200,6 @@ docs <- tm_map(docs, plusSpace, c("ppb"))
 docs <- tm_map(docs, plusSpace, c("project"))
 docs <- tm_map(docs, plusSpace, c("proposal"))
 docs <- tm_map(docs, plusSpace, c("psv"))
-docs <- tm_map(docs, plusSpace, c("p-tank"))
 docs <- tm_map(docs, plusSpace, c("pump"))
 docs <- tm_map(docs, plusSpace, c("quantity"))
 docs <- tm_map(docs, plusSpace, c("revamping"))
@@ -190,10 +215,11 @@ docs <- tm_map(docs, plusSpace, c("stbd"))
 docs <- tm_map(docs, plusSpace, c("steel"))
 docs <- tm_map(docs, plusSpace, c("strainer"))
 docs <- tm_map(docs, plusSpace, c("structure"))
+docs <- tm_map(docs, plusSpace, c("system"))
+
 docs <- tm_map(docs, plusSpace, c("study"))
 docs <- tm_map(docs, plusSpace, c("support"))
-docs <- tm_map(docs, plusSpace, c("tie-in"))
-docs <- tm_map(docs, plusSpace, c("t-supprot"))
+#docs <- tm_map(docs, plusSpace, c("tie-in"))
 docs <- tm_map(docs, plusSpace, c("type"))
 docs <- tm_map(docs, plusSpace, c("ug"))
 docs <- tm_map(docs, plusSpace, c("unit"))
@@ -202,8 +228,7 @@ docs <- tm_map(docs, plusSpace, c("valve"))
 docs <- tm_map(docs, plusSpace, c("logic"))
 docs <- tm_map(docs, plusSpace, c("api"))
 docs <- tm_map(docs, plusSpace, c("module"))
-docs <- tm_map(docs, plusSpace, c("revision"))
-
+docs <- tm_map(docs, plusSpace, c("turbine"))
 docs <- tm_map(docs, plusSpace, c("vendor"))   ##
 docs <- tm_map(docs, plusSpace, c("가능"))
 docs <- tm_map(docs, plusSpace, c("간섭"))
@@ -244,6 +269,7 @@ docs <- tm_map(docs, plusSpace, c("설치"))
 docs <- tm_map(docs, plusSpace, c("수량"))
 docs <- tm_map(docs, plusSpace, c("수정"))
 docs <- tm_map(docs, plusSpace, c("업무"))
+docs <- tm_map(docs, plusSpace, c("이동"))
 docs <- tm_map(docs, plusSpace, c("오동작"))
 docs <- tm_map(docs, plusSpace, c("우려"))
 docs <- tm_map(docs, plusSpace, c("위치"))
@@ -258,13 +284,14 @@ docs <- tm_map(docs, plusSpace, c("지진"))
 docs <- tm_map(docs, plusSpace, c("처리"))
 docs <- tm_map(docs, plusSpace, c("철거"))
 docs <- tm_map(docs, plusSpace, c("추가"))
-docs <- tm_map(docs, plusSpace, c("추가"))
 docs <- tm_map(docs, plusSpace, c("토목"))
 docs <- tm_map(docs, plusSpace, c("펌프"))
 docs <- tm_map(docs, plusSpace, c("필요"))
 docs <- tm_map(docs, plusSpace, c("하중"))
 docs <- tm_map(docs, plusSpace, c("확보"))
 docs <- tm_map(docs, plusSpace, c("회피"))
+docs <- tm_map(docs, plusSpace, c("이중"))
+docs <- tm_map(docs, plusSpace, c("작업"))
 
 
 
@@ -279,7 +306,7 @@ docs <- tm_map(docs, plusSpace, c("회피"))
 #docs <- tm_map(docs, plusSpace, c("revb"))
 
 # 2)
-docs <- tm_map(docs, plusSpace, c("REV"))
+docs <- tm_map(docs, plusSpace, c("revision"))
 
 
 
@@ -292,6 +319,9 @@ lapply(docs, content)
 toSpace <- content_transformer(function(x, pattern){return(gsub(pattern," ",x))})
 #docs <- tm_map(docs, toSpace, c("[[:punct:]]"))
 docs <- tm_map(docs, toSpace, c(","))
+docs <- tm_map(docs, toSpace, c("\\("))
+docs <- tm_map(docs, toSpace, c("\\)"))
+#docs <- tm_map(docs, toSpace, c("\\-"))  #제품 코드 얻을거면 이거 넣으면 됨. #제품 코드를 얻으면 인치수는 얻을 수 있음. (숫자)" 형태. # 근데 제품 코드 쓸거면 필요없는 말은 수작업으로 빼야 할듯
 docs <- tm_map(docs, toSpace, c("의"))
 docs <- tm_map(docs, toSpace, c("에는"))
 docs <- tm_map(docs, toSpace, c("을"))
@@ -301,11 +331,9 @@ docs <- tm_map(docs, toSpace, c("으로"))
 docs <- tm_map(docs, toSpace, c("하여"))
 docs <- tm_map(docs, toSpace, c("됨"))
 docs <- tm_map(docs, toSpace, c("로"))
-docs <- tm_map(docs, toSpace, c("에"))
 docs <- tm_map(docs, toSpace, c("으로"))
 docs <- tm_map(docs, toSpace, c("따라"))
 docs <- tm_map(docs, toSpace, c("따른"))
-docs <- tm_map(docs, toSpace, c("에서"))
 docs <- tm_map(docs, toSpace, c("대한"))
 docs <- tm_map(docs, toSpace, c("인한"))
 docs <- tm_map(docs, toSpace, c("되는"))
@@ -314,6 +342,7 @@ docs <- tm_map(docs, toSpace, c("위한"))
 docs <- tm_map(docs, toSpace, c("하고"))
 docs <- tm_map(docs, toSpace, c("하는"))
 docs <- tm_map(docs, toSpace, c("하지"))
+docs <- tm_map(docs, toSpace, c("에서"))
 docs <- tm_map(docs, toSpace, c("한다."))
 
 
@@ -327,23 +356,28 @@ docs <- tm_map(docs, stripWhitespace) #공백제거
 #docs <- tm_map(docs, myRemove, c("\ d"))
 
 
+# 위에 단어 나누는 거는 이제 왠만한거는 다 잘 잘리는 것 같고, 이제 이 아래 코드에서 단어 이것저것 빼보면서 확인하고, 
+# 아니면 주성분분석(PCA) 이용해서 차원 축소하는 방법 적용해 봐야 할 것 같아요
+# 예를 들어 "변경"이라는 단어가 다른 단어들이랑 상관관계가 높아서 한 번 빼봤는데 성능이 조금 올라가더라고요.
+# 이런애들이 정말 많을 것 같은데,, 일일히 확인하면서 빼는 방법 밖에 없겠죠...?
+
+
+
 # 입력한 단어 삭제(띄어쓰기 되어 있는 단어만)
-mystopwords <- c(c("by","for","and","of","to","with")) 
+mystopwords <- c(c("b/0","by","for","and","of","to","with")) 
 docs <- tm_map(docs, removeWords, mystopwords)
 
-
-# 임의로 삭제
-#  "--->", "/0)", "1)", "13", "16", "2)", "20--->21", "30%",
+# "변경","발생","증가"
 
 
-# 필요하면 쓸 애들 (근데 영어에만 적용되는거 같기도 함.)
-#docs <- tm_map(docs, removePunctuation)
-#docs <- tm_map(docs, removeNumbers)
-docs <- tm_map(docs, stripWhitespace)
-docs <- tm_map(docs, content_transformer(trimws))
-#docs <- tm_map(docs, stemDocument)
+# 필요하면 쓸 애들 
+#docs <- tm_map(docs, removePunctuation) # 구두점 제거
+#docs <- tm_map(docs, removeNumbers)   # 숫자 제거
+docs <- tm_map(docs, stripWhitespace)  # 공백 2개 제거
+docs <- tm_map(docs, content_transformer(trimws))  # 요건 뭘까요?
+#docs <- tm_map(docs, stemDocument)   # 요것도 뭘까요?
 
-dtm <- DocumentTermMatrix(docs) #1060개의 데이터에서 2818개의 단어
+dtm <- DocumentTermMatrix(docs)
 
 dtm
 inspect(dtm)
@@ -352,18 +386,19 @@ inspect(dtm)
 dtm <- DocumentTermMatrix(docs, control=list(wordLengths=c(2,10), bounds=list(global=c(10, 900))))
 dtm # 1060개 행에서 378개의 단어
 
-# dtm을 행렬 형태로 변환
 
+# dtm을 행렬 형태로 변환
 termfreq <- colSums(as.matrix(dtm))
-termfreq   # 이거 실행시키면 상단에 일반 숫자들이 있는데 이거 처리만 하면 그래도 깔끔할 듯!
+termfreq  
 termfreq[head(order(termfreq, decreasing=TRUE))]
 termfreq[tail(order(termfreq, decreasing=TRUE))]
+
 
 # 지정된 최소 출현 빈도 이상 등장한 단어를 찾아줌줌
 findFreqTerms(dtm, lowfreq=200)
 
 # 상관관계가 있는 단어를 찾아줌.
-findAssocs(dtm, c("line"),c(0.20,0.25))
+#findAssocs(dtm, c("12cs1s01","12cg0t01","1fe0w01","31a10","31a50","aa22","ar5w"),c(0.20,0.25))
 
 
 #워드 클라우드
@@ -435,9 +470,11 @@ mean(project.nb.pred==y.test) #검증데이터 정확도
 
 # 잘못 분류된 텍스트 확인하는 코드
 #text <- lapply(docs, content)
+#text[(project.nb.pred=="안전")&(y.test=="심각")]
 
 #csv 만들기
-#makecsv <- project_xy.dtm[,c(-1,-2,-3,-4,-5,-6,-7,-12,-13)]
-#makecsv
-#binary_df <- cbind(makecsv, project_xy$type)
-#write.csv(binary_df,file="C:/Users/82104/Desktop/상아매니지먼트/20210811.csv")
+makecsv <- project_xy.dtm[,c(-2,-3,-4,-5)]
+makecsv
+binary_df <- cbind(makecsv, project_xy$type)
+write.csv(binary_df,file="C:/Users/82104/Desktop/상아매니지먼트/original.csv")
+
