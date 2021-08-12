@@ -1,0 +1,109 @@
+---
+title: "Logistic regression"
+author: "Seunggyun Shin"
+date: '2021 8 11 '
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# Path
+setwd("C:/Users/HP/Desktop/학교자료/데이터프로젝트/상아매니지먼트/20210811")
+```
+
+```{r}
+# Load data
+dat = read.csv("20210811.csv")
+
+# delete 1st column ('x')
+dat = dat[, -1] # 숫자나오는 column 삭제
+names(dat)[85] = "심각도"
+dat[ ,85] = dat$심각도 == "안전" #Logical 변수로 변환
+```
+
+```{r}
+# Train / Test set (8:2)
+set.seed(1234)
+a = sample(nrow(dat), nrow(dat) * 0.8, replace = FALSE)
+train = dat[a, ]
+test = dat[-a, ]
+```
+
+```{r}
+model = glm(formula = 심각도 ~ . , data = train, family = binomial) #모델링
+```
+
+```{r}
+# 전체모델로 "안전" 예측 정확도
+x = as.numeric(predict(model, test, type = "response"))
+min(x)
+max(x) #0 ~ 1 사이 (o)
+y = x > 0.5 # 0.5보다 크면 True  아니면 False
+
+library(caret)
+library(e1071)
+confusionMatrix(as.factor(y), as.factor(test$심각도))
+```
+
+```{r}
+#AIC Selection
+library(MASS)
+GLM = glm(formula = 심각도 ~ . , data = train, family = binomial)
+GLM1 = glm(formula = 심각도 ~ 1 , data = train, family = binomial)
+
+#stepAIC(GLM1, direction = "both", scope = list(upper = GLM, lower = GLM1))
+
+#이거 돌리면 오래걸려요!
+```
+```{r}
+modelAIC = glm(formula = 심각도 ~ dwg + all + size + 추가 + revision + rtrp + 
+    삭제 + compressor + system + process + pump + vendor + 설계 + 
+    connect + 위치 + tie.in + gate + chang + 계약 + 반영 + issue + 
+    sample + 도면 + oil + 모델 + spec + pass + pipe + 기존 + 
+    설치 + 확보 + control + inform + psv + 관련 + plan + plotplan + 
+    p.id, family = binomial, data = train)
+```
+
+```{r}
+x_AIC = as.numeric(predict(modelAIC, test, type = "response"))
+y_AIC = x > 0.5
+```
+
+```{r}
+confusionMatrix(as.factor(y_AIC), as.factor(test$심각도))
+```
+
+```{r}
+#심각도 한번 해볼까...?
+dat1 = read.csv("20210811.csv")
+
+# delete 1st column ('x')
+dat1 = dat1[, -1]
+names(dat1)[85] = "심각도"
+dat1[ ,85] = dat1$심각도 == "경계"
+```
+
+```{r}
+set.seed(1234)
+a = sample(nrow(dat1), nrow(dat1) * 0.8, replace = FALSE)
+train1 = dat1[a, ]
+test1 = dat1[-a, ]
+```
+```{r}
+model1 = glm(formula = 심각도 ~ . , data = train, family = binomial)
+```
+```{r}
+x_1 = as.numeric(predict(model1, test1, type = "response"))
+y_1 = x > 0.5
+
+library(caret)
+library(e1071)
+confusionMatrix(as.factor(y_1), as.factor(test1$심각도))
+
+#19프로라..... 한마디로 망했다고 볼 수 있겠네요
+# 안전을 제외하고 둘이해보고싶은데 코드를 못짜겠다......
+```
+
