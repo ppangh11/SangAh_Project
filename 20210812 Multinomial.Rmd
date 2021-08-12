@@ -1,0 +1,53 @@
+---
+title: '20210812 Multinomial'
+author: "Seunggyun Shin"
+date: '2021 8 12 '
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# data loading
+dat = read.csv("20210812.csv")
+names(dat)[84] = "심각도"
+dat = dat[ , -1] # delete column 1 
+```
+
+```{r}
+#train, test set
+set.seed(1111)
+a = sample(nrow(dat), nrow(dat) * 0.8, replace = FALSE)
+train = dat[a, ]
+test = dat[-a, ]
+```
+
+```{r}
+library(nnet)
+model = multinom(심각도 ~ ., data = train)
+```
+```{r}
+exp(coef(model))
+```
+```{r}
+head(round(fitted(model), 2))
+```
+
+```{r}
+train_predict = predict(model, newdata = train, "class")
+tab = table(train$심각도, train_predict)
+round((sum(diag(tab))/sum(tab))*100,2)
+```
+
+```{r}
+test_predict = predict(model, newdata = test, "class")
+tab_test = table(test$심각도, test_predict)
+round((sum(diag(tab_test))/sum(tab_test))*100,2)
+```
+
+
+
+
+
