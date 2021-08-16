@@ -93,3 +93,5 @@ plot(formula = accuracy ~ k, data = vaild_k, type="o", pch=20, main= "validation
 
 vaild_k[1:10,]
 
+# 그냥 한 번 해봤는데 별 효과는 없네요 ^^ 
+# 20210810 이랑 original csv에서는 70후반 나오고, 20210811.csv에서는 숫자 요리 조리 바꾸니까 k=3에서 0.81까지 나왔어요
