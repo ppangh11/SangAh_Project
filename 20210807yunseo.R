@@ -1,4 +1,5 @@
 # 참고한 링크: https://www.youtube.com/watch?v=PvvrexFqFDU&t=292s
+# ~34분까지 내용
 
 
 setwd("C:/Users/82104/Desktop/상아매니지먼트")
@@ -46,253 +47,36 @@ docs <- tm_map(docs, content_transformer(tolower))
 # 특정 단어를 다른 형태로 바꾸는 작업
 changeWord <- content_transformer(function(x, pattern, changepattern){return(gsub(pattern, changepattern, x))})
 
+#원본데이터에서 나온 단어 처리
+changeword_df <- as.data.frame(read_excel("단어변경.xlsx")) #데이터불러오기
 
-docs <- tm_map(docs,changeWord,"spectacle"," spec ")
+i <- 1
 
+for (i in nrow(changeword_df)){
+  docs <- tm_map(docs, changeWord, changeword_df[i,1], changeword_df[i,2])
+}
 
+#플랜트 용어 사전 정리한 단어 처리
+#change <- read.csv("변경단어.csv")
+#as.vector(change)
 
-docs <- tm_map(docs,changeWord,"change","변경")
-docs <- tm_map(docs,changeWord,"conn.","conn")
-docs <- tm_map(docs,changeWord,"lines","line")
-docs <- tm_map(docs,changeWord,"location","위치")
-docs <- tm_map(docs,changeWord,"plot plan","PlotPlan")  ##
-docs <- tm_map(docs,changeWord,"sheets","sheet")
-docs <- tm_map(docs,changeWord,"u/g","ug")
-docs <- tm_map(docs,changeWord,"vendor print","v/p")
-docs <- tm_map(docs,changeWord,"vp","v/p")
-docs <- tm_map(docs,changeWord,"라인","line")
-docs <- tm_map(docs,changeWord,"요구","proposal")
-docs <- tm_map(docs,changeWord,"requirement","proposal")
-docs <- tm_map(docs,changeWord,"데크","deck")
-docs <- tm_map(docs,changeWord,"파이프","pipe")
-docs <- tm_map(docs,changeWord,"systems","system")
-
-docs <- tm_map(docs,changeWord,"요청","proposal")
-docs <- tm_map(docs,changeWord,"펌프","pump")
-
-docs <- tm_map(docs,changeWord,"dewatering","dwg")
-docs <- tm_map(docs,changeWord,"ewatering","dewatering")
-
-docs <- tm_map(docs,changeWord,"mh","m/h")
-docs <- tm_map(docs,changeWord,"equipment","equip")
-docs <- tm_map(docs,changeWord,"stedccture","structure")
-docs <- tm_map(docs,changeWord,"specification"," spec ")
-
-
-docs <- tm_map(docs,changeWord,"design","디자인")
-docs <- tm_map(docs,changeWord,"pipe rack","PipeRack")
-docs <- tm_map(docs,changeWord,"connect","CONNECT")
-docs <- tm_map(docs,changeWord,"connecting","CONNECT")
-docs <- tm_map(docs,changeWord,"connection","CONNECT")
-docs <- tm_map(docs,changeWord,"conn","CONNECT")
-docs <- tm_map(docs,changeWord,"funner","funnel")
-docs <- tm_map(docs,changeWord,"cordination","조정")
-docs <- tm_map(docs,changeWord,"document","계약")
-
-docs <- tm_map(docs,changeWord,"stairs"," STAIR ")
-
-docs <- tm_map(docs,changeWord,"air compressor"," aircomp ")
-docs <- tm_map(docs,changeWord,"air comp"," aircomp ")
-
-docs <- tm_map(docs,changeWord,"크기","size")
-
-docs <- tm_map(docs,changeWord,"tie-in"," TieIn ")
-docs <- tm_map(docs,changeWord,"p[.]c"," pc ")
-
-docs <- tm_map(docs,changeWord,"pcn"," PCN ")
-
-docs <- tm_map(docs,changeWord,"geo[.]"," geo ")
-
-# 화살표 처리
-#docs <- tm_map(docs,changeWord,"\\d+(.*)--->(.*)\\d+"," 화살표숫자 ")
-#docs <- tm_map(docs,changeWord,"\\D+(.*)--->(.*)\\D+"," 화살표문자 ") #변경이 안되는 애도 있네요...
-#docs <- tm_map(docs,changeWord,"------>"," ------> ")
-#docs <- tm_map(docs,changeWord,"----->"," -----> ")
-#docs <- tm_map(docs,changeWord,"---->"," ----> ")
-#docs <- tm_map(docs,changeWord,"--->"," ---> ")
-
-
-# rev 처리 2)
-docs <- tm_map(docs,changeWord,"review","RV")
-docs <- tm_map(docs,changeWord,"rev"," revision ")
-docs <- tm_map(docs,changeWord,"rev0"," revision ")
-docs <- tm_map(docs,changeWord,"rev1"," revision ")
-docs <- tm_map(docs,changeWord,"revc"," revision ")
-docs <- tm_map(docs,changeWord,"revb"," revision ")
-
-#spec, special 처리 : spec 종류별로 분리
-#docs <- tm_map(docs,changeWord,"spectacle","spec")
-#docs <- tm_map(docs,changeWord,"spec","spec")
+#i <- 1
+#for (i in dim(change)[1]){
+#  docs <- tm_map(docs,changeWord,change[i,1],change[i,3])
+#}
 
 
 # 중요한 단어를 잘라내기 위해 양쪽에 띄어쓰기 삽입: ex)"변경" -> " 변경 "
 plusSpace <- content_transformer(function(x, pattern){return(gsub(pattern,paste(" ",pattern," ",sep=""),x))})
-#docs <- tm_map(docs, plusSpace, c("ballast"))
-docs <- tm_map(docs, plusSpace, c("3d"))
-docs <- tm_map(docs, plusSpace, c("30%"))
-docs <- tm_map(docs, plusSpace, c("60%"))
-docs <- tm_map(docs, plusSpace, c("90%"))
 
-docs <- tm_map(docs, plusSpace, c("acceleratino"))
-docs <- tm_map(docs, plusSpace, c("analzer"))
-docs <- tm_map(docs, plusSpace, c("barite"))
-docs <- tm_map(docs, plusSpace, c("bentonite"))
-docs <- tm_map(docs, plusSpace, c("bop"))
-docs <- tm_map(docs, plusSpace, c("bracing"))
-docs <- tm_map(docs, plusSpace, c("branch"))
-docs <- tm_map(docs, plusSpace, c("boiler"))
+# 원본데이터에서 나온 단어 처리
 
-docs <- tm_map(docs, plusSpace, c("burner"))
-docs <- tm_map(docs, plusSpace, c("c/v"))
-docs <- tm_map(docs, plusSpace, c("cable"))
-docs <- tm_map(docs, plusSpace, c("cement"))
-docs <- tm_map(docs, plusSpace, c("chang"))
-docs <- tm_map(docs, plusSpace, c("check"))
-docs <- tm_map(docs, plusSpace, c("class"))
-docs <- tm_map(docs, plusSpace, c("conn"))
-docs <- tm_map(docs, plusSpace, c("CONNECT"))
-docs <- tm_map(docs, plusSpace, c("cost"))
-docs <- tm_map(docs, plusSpace, c("compressor"))
+spaceword_df <- as.data.frame(read_excel("띄어쓰기.xlsx")) #데이터불러오기
 
-docs <- tm_map(docs, plusSpace, c("deck"))
-docs <- tm_map(docs, plusSpace, c("design"))
-docs <- tm_map(docs, plusSpace, c("dewatering"))
-docs <- tm_map(docs, plusSpace, c("diverter"))
-docs <- tm_map(docs, plusSpace, c("drain"))
-docs <- tm_map(docs, plusSpace, c("dwg"))
-docs <- tm_map(docs, plusSpace, c("edg"))
-docs <- tm_map(docs, plusSpace, c("elev"))
-docs <- tm_map(docs, plusSpace, c("epdm"))
-docs <- tm_map(docs, plusSpace, c("equip"))
-docs <- tm_map(docs, plusSpace, c("feed"))
-docs <- tm_map(docs, plusSpace, c("filter"))
-docs <- tm_map(docs, plusSpace, c("flare"))
-docs <- tm_map(docs, plusSpace, c("flare"))
-docs <- tm_map(docs, plusSpace, c("funnel"))
-docs <- tm_map(docs, plusSpace, c("gate"))
-docs <- tm_map(docs, plusSpace, c("globe"))
-docs <- tm_map(docs, plusSpace, c("gre"))
-docs <- tm_map(docs, plusSpace, c("geo"))
-
-docs <- tm_map(docs, plusSpace, c("handling"))
-docs <- tm_map(docs, plusSpace, c("hb"))
-docs <- tm_map(docs, plusSpace, c("ibc"))
-docs <- tm_map(docs, plusSpace, c("itb"))
-
-docs <- tm_map(docs, plusSpace, c("ifc"))
-docs <- tm_map(docs, plusSpace, c("line"))
-docs <- tm_map(docs, plusSpace, c("liquids"))
-docs <- tm_map(docs, plusSpace, c("loop"))
-docs <- tm_map(docs, plusSpace, c("m/h"))
-docs <- tm_map(docs, plusSpace, c("manifold"))
-docs <- tm_map(docs, plusSpace, c("model"))
-docs <- tm_map(docs, plusSpace, c("mud"))
-docs <- tm_map(docs, plusSpace, c("nozzle"))
-docs <- tm_map(docs, plusSpace, c("p&id"))
-docs <- tm_map(docs, plusSpace, c("p/f"))
-docs <- tm_map(docs, plusSpace, c("pass"))
-docs <- tm_map(docs, plusSpace, c("pbr"))
-docs <- tm_map(docs, plusSpace, c("pc"))
-docs <- tm_map(docs, plusSpace, c("PipeRack"))
-docs <- tm_map(docs, plusSpace, c("PlotPlan"))
-docs <- tm_map(docs, plusSpace, c("point"))
-docs <- tm_map(docs, plusSpace, c("ppb"))
-docs <- tm_map(docs, plusSpace, c("project"))
-docs <- tm_map(docs, plusSpace, c("proposal"))
-docs <- tm_map(docs, plusSpace, c("psv"))
-docs <- tm_map(docs, plusSpace, c("pump"))
-docs <- tm_map(docs, plusSpace, c("quantity"))
-docs <- tm_map(docs, plusSpace, c("revamping"))
-docs <- tm_map(docs, plusSpace, c("review"))
-docs <- tm_map(docs, plusSpace, c("route"))
-docs <- tm_map(docs, plusSpace, c("rtrp"))
-docs <- tm_map(docs, plusSpace, c("schedule"))
-docs <- tm_map(docs, plusSpace, c("sheet"))
-docs <- tm_map(docs, plusSpace, c("size"))
-docs <- tm_map(docs, plusSpace, c("special"))
-docs <- tm_map(docs, plusSpace, c("stair"))
-docs <- tm_map(docs, plusSpace, c("stbd"))
-docs <- tm_map(docs, plusSpace, c("steel"))
-docs <- tm_map(docs, plusSpace, c("strainer"))
-docs <- tm_map(docs, plusSpace, c("structure"))
-docs <- tm_map(docs, plusSpace, c("system"))
-
-docs <- tm_map(docs, plusSpace, c("study"))
-docs <- tm_map(docs, plusSpace, c("support"))
-#docs <- tm_map(docs, plusSpace, c("tie-in"))
-docs <- tm_map(docs, plusSpace, c("type"))
-docs <- tm_map(docs, plusSpace, c("ug"))
-docs <- tm_map(docs, plusSpace, c("unit"))
-docs <- tm_map(docs, plusSpace, c("v/p"))
-docs <- tm_map(docs, plusSpace, c("valve"))
-docs <- tm_map(docs, plusSpace, c("logic"))
-docs <- tm_map(docs, plusSpace, c("api"))
-docs <- tm_map(docs, plusSpace, c("module"))
-docs <- tm_map(docs, plusSpace, c("turbine"))
-docs <- tm_map(docs, plusSpace, c("vendor"))   ##
-docs <- tm_map(docs, plusSpace, c("가능"))
-docs <- tm_map(docs, plusSpace, c("간섭"))
-docs <- tm_map(docs, plusSpace, c("검토"))
-docs <- tm_map(docs, plusSpace, c("격벽"))
-docs <- tm_map(docs, plusSpace, c("결여"))
-docs <- tm_map(docs, plusSpace, c("계산"))
-docs <- tm_map(docs, plusSpace, c("계약"))
-docs <- tm_map(docs, plusSpace, c("고려"))
-docs <- tm_map(docs, plusSpace, c("곤란"))
-docs <- tm_map(docs, plusSpace, c("공기"))  #공기 압축기라는 단어 존재
-docs <- tm_map(docs, plusSpace, c("구매"))
-docs <- tm_map(docs, plusSpace, c("근거"))
-docs <- tm_map(docs, plusSpace, c("급수"))
-docs <- tm_map(docs, plusSpace, c("도면"))
-docs <- tm_map(docs, plusSpace, c("디자인"))
-docs <- tm_map(docs, plusSpace, c("반영"))
-docs <- tm_map(docs, plusSpace, c("발생"))
-docs <- tm_map(docs, plusSpace, c("발주처"))
-docs <- tm_map(docs, plusSpace, c("방법"))
-docs <- tm_map(docs, plusSpace, c("배관"))
-docs <- tm_map(docs, plusSpace, c("배출"))
-docs <- tm_map(docs, plusSpace, c("배치"))
-docs <- tm_map(docs, plusSpace, c("변경"))
-docs <- tm_map(docs, plusSpace, c("변동"))
-docs <- tm_map(docs, plusSpace, c("변형"))
-docs <- tm_map(docs, plusSpace, c("별도"))
-docs <- tm_map(docs, plusSpace, c("보강"))
-docs <- tm_map(docs, plusSpace, c("보완"))
-docs <- tm_map(docs, plusSpace, c("부재"))
-docs <- tm_map(docs, plusSpace, c("부족"))
-docs <- tm_map(docs, plusSpace, c("불명확"))
-docs <- tm_map(docs, plusSpace, c("사업주"))
-docs <- tm_map(docs, plusSpace, c("사항"))
-docs <- tm_map(docs, plusSpace, c("상이"))
-docs <- tm_map(docs, plusSpace, c("설계"))
-docs <- tm_map(docs, plusSpace, c("설치"))
-docs <- tm_map(docs, plusSpace, c("수량"))
-docs <- tm_map(docs, plusSpace, c("수정"))
-docs <- tm_map(docs, plusSpace, c("업무"))
-docs <- tm_map(docs, plusSpace, c("이동"))
-docs <- tm_map(docs, plusSpace, c("오동작"))
-docs <- tm_map(docs, plusSpace, c("우려"))
-docs <- tm_map(docs, plusSpace, c("위치"))
-docs <- tm_map(docs, plusSpace, c("위험"))
-docs <- tm_map(docs, plusSpace, c("작업자"))
-docs <- tm_map(docs, plusSpace, c("잠재"))
-docs <- tm_map(docs, plusSpace, c("재설계"))
-docs <- tm_map(docs, plusSpace, c("적용"))
-docs <- tm_map(docs, plusSpace, c("제작장"))
-docs <- tm_map(docs, plusSpace, c("증가"))
-docs <- tm_map(docs, plusSpace, c("지진"))
-docs <- tm_map(docs, plusSpace, c("처리"))
-docs <- tm_map(docs, plusSpace, c("철거"))
-docs <- tm_map(docs, plusSpace, c("추가"))
-docs <- tm_map(docs, plusSpace, c("토목"))
-docs <- tm_map(docs, plusSpace, c("펌프"))
-docs <- tm_map(docs, plusSpace, c("필요"))
-docs <- tm_map(docs, plusSpace, c("하중"))
-docs <- tm_map(docs, plusSpace, c("확보"))
-docs <- tm_map(docs, plusSpace, c("회피"))
-docs <- tm_map(docs, plusSpace, c("이중"))
-docs <- tm_map(docs, plusSpace, c("작업"))
-
+i <- 1
+for (i in nrow(changeword_df)){
+  docs <- tm_map(docs, plusSpace, spaceword_df[i,1])
+}
 
 
 
@@ -306,7 +90,7 @@ docs <- tm_map(docs, plusSpace, c("작업"))
 #docs <- tm_map(docs, plusSpace, c("revb"))
 
 # 2)
-docs <- tm_map(docs, plusSpace, c("revision"))
+#docs <- tm_map(docs, plusSpace, c("revision"))
 
 
 
@@ -473,8 +257,8 @@ mean(project.nb.pred==y.test) #검증데이터 정확도
 #text[(project.nb.pred=="안전")&(y.test=="심각")]
 
 #csv 만들기
-makecsv <- project_xy.dtm[,c(-2,-3,-4,-5)]
-makecsv
-binary_df <- cbind(makecsv, project_xy$type)
-write.csv(binary_df,file="C:/Users/82104/Desktop/상아매니지먼트/original.csv")
+#makecsv <- project_xy.dtm[,c(-2,-3,-4,-5)]
+#makecsv
+#binary_df <- cbind(makecsv, project_xy$type)
+#write.csv(binary_df,file="C:/Users/82104/Desktop/상아매니지먼트/original.csv")
 
