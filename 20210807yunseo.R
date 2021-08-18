@@ -48,11 +48,11 @@ docs <- tm_map(docs, content_transformer(tolower))
 changeWord <- content_transformer(function(x, pattern, changepattern){return(gsub(pattern, changepattern, x))})
 
 #원본데이터에서 나온 단어 처리
-changeword_df <- as.data.frame(read_excel("단어변경.xlsx")) #데이터불러오기
+changeword_df <- as.data.frame(read_excel("망한단어변경.xlsx")) #데이터불러오기
 
 i <- 1
 
-for (i in nrow(changeword_df)){
+for (i in c(1:nrow(changeword_df))){
   docs <- tm_map(docs, changeWord, changeword_df[i,1], changeword_df[i,2])
 }
 
@@ -74,23 +74,9 @@ plusSpace <- content_transformer(function(x, pattern){return(gsub(pattern,paste(
 spaceword_df <- as.data.frame(read_excel("띄어쓰기.xlsx")) #데이터불러오기
 
 i <- 1
-for (i in nrow(changeword_df)){
+for (i in c(1:nrow(changeword_df))){
   docs <- tm_map(docs, plusSpace, spaceword_df[i,1])
 }
-
-
-
-
-
-# reb 어쩌지 => 근데 얘네끼리 별 차이 없어보임 (거의 다 안전으로 분류, 그냥 하나로 합칠까요?)
-# 1)
-#docs <- tm_map(docs, plusSpace, c("rev0"))
-#docs <- tm_map(docs, plusSpace, c("revc"))
-#docs <- tm_map(docs, plusSpace, c("rev1"))
-#docs <- tm_map(docs, plusSpace, c("revb"))
-
-# 2)
-#docs <- tm_map(docs, plusSpace, c("revision"))
 
 
 
