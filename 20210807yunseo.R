@@ -1,5 +1,5 @@
 # 참고한 링크: https://www.youtube.com/watch?v=PvvrexFqFDU&t=292s
-# ~34분까지 내용
+
 
 
 setwd("C:/Users/82104/Desktop/상아매니지먼트")
