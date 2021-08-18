@@ -48,7 +48,7 @@ docs <- tm_map(docs, content_transformer(tolower))
 changeWord <- content_transformer(function(x, pattern, changepattern){return(gsub(pattern, changepattern, x))})
 
 #원본데이터에서 나온 단어 처리
-changeword_df <- as.data.frame(read_excel("망한단어변경.xlsx")) #데이터불러오기
+changeword_df <- as.data.frame(read_excel("조금만망한단어변경.xlsx", trim_ws=FALSE)) #데이터불러오기
 
 i <- 1
 
@@ -71,10 +71,10 @@ plusSpace <- content_transformer(function(x, pattern){return(gsub(pattern,paste(
 
 # 원본데이터에서 나온 단어 처리
 
-spaceword_df <- as.data.frame(read_excel("띄어쓰기.xlsx")) #데이터불러오기
+spaceword_df <- as.data.frame(read_excel("띄어쓰기.xlsx", trim_ws=FALSE)) #데이터불러오기
 
 i <- 1
-for (i in c(1:nrow(changeword_df))){
+for (i in c(1:nrow(spaceword_df))){
   docs <- tm_map(docs, plusSpace, spaceword_df[i,1])
 }
 
@@ -89,6 +89,7 @@ lapply(docs, content)
 toSpace <- content_transformer(function(x, pattern){return(gsub(pattern," ",x))})
 #docs <- tm_map(docs, toSpace, c("[[:punct:]]"))
 docs <- tm_map(docs, toSpace, c(","))
+#docs <- tm_map(docs, toSpace, c("[.]"))
 docs <- tm_map(docs, toSpace, c("\\("))
 docs <- tm_map(docs, toSpace, c("\\)"))
 #docs <- tm_map(docs, toSpace, c("\\-"))  #제품 코드 얻을거면 이거 넣으면 됨. #제품 코드를 얻으면 인치수는 얻을 수 있음. (숫자)" 형태. # 근데 제품 코드 쓸거면 필요없는 말은 수작업으로 빼야 할듯
