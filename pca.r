@@ -18,7 +18,10 @@ var(x_data)
 dataset.pca <- prcomp(x_data, scale. =T)
 dataset.pca
 
-summary(dataset.pca)
+
+
+summary(dataset.pca) # 이거 실행하면 표준편차, 분산비율, 분산 누적 합계 확인 가능
+
 # standard deviation : 표준편차
 # proportion of variance : 분산비율, 각 주성분의 차지하는 비율, 클 수록 영향도 높음
 # cumulative proportion : 분산 누적 합계
@@ -42,7 +45,7 @@ summary(dataset.pca)
 #library(ggbiplot)
 
 round(predict(dataset.pca), 3)
-dataset.pca.df <- predict(dataset.pca)[,1:30]
+dataset.pca.df <- predict(dataset.pca)[,1:30]   # 위에서 자르라는 기준이 있긴했는데, 잘 모르것어서 그냥 제 멋대로 30에서 잘랐어요
 
 dataset.pca.df
 
