@@ -3,14 +3,15 @@
 setwd("C:/Users/82104/Desktop/상아매니지먼트")
 
 
-dataset <- read.csv("20210811.csv")
+dataset <- read.csv("0819original.csv")
 
 library(HSAUR)
 head(dataset)
 summary(dataset)
 
-y_data <- dataset[,86]
-x_data <- dataset[,c(-1,-86)]
+# 예측, 종속 변수 할당
+y_data <- dataset[,94]
+x_data <- dataset[,c(-1,-94,-95,-96,-97)]
 
 var(x_data)
 
@@ -30,7 +31,6 @@ summary(dataset.pca)
 #                                       그래프가 완만해 지는 부분이전까지만 활용
 #screeplot(dataset.pca, type="lines", pch=1, main="scree plot", npcs=40)
 
-# => original.csv : 46
 
 #pca 시각화
 
@@ -42,11 +42,11 @@ summary(dataset.pca)
 #library(ggbiplot)
 
 round(predict(dataset.pca), 3)
-dataset.pca.df <- predict(dataset.pca)[,1:20]
+dataset.pca.df <- predict(dataset.pca)[,1:30]
 
 dataset.pca.df
 
-set.seed(123)
+#set.seed(123)
 
 
 
@@ -57,9 +57,14 @@ train <- sample(nrow(dataset), 0.8*nrow(dataset)) #훈련데이터 예측변수
 
 y.train <- y_data[train]  #훈련데이터용 결과변수
 y.test <- y_data [-train] #검정데이터용 결과변수
+
+y.train.order <- factor(y.train, levels=c("안전","경계","심각"), ordered=TRUE)
+y.test.order <- factor(y.test, levels=c("안전","경계","심각"), ordered=TRUE)
+
 table(y.train)
 table(y.test)
 
+y.train
 
 prop.table(table(y.train))
 prop.table(table(y.test))
@@ -67,10 +72,42 @@ prop.table(table(y.test))
 x.train <- dataset.pca.df[train,]
 x.test <- dataset.pca.df[-train,]
 
-library(class)
-set.seed(123)
-knn <- knn(train = x.train, test = x.test, cl = y.train, k = 3)
 
+#####<<무시>>##################################################################################################################
+
+# 서수 로지스틱 회귀분석
+# 뭔가 좀 많이 이상해서 여긴 빼고 봐주세요
+# 참조 링크: https://stats.idre.ucla.edu/r/dae/ordinal-logistic-regression/
+library(foreign)
+library(ggplot2)
+library(MASS)
+library(Hmisc)
+library(reshape2)
+oridinal_logit_m <- polr(y.train.order ~ .,data=x.train,  Hess=TRUE)
+summary(oridinal_logit_m)
+
+
+orid.logit.pred <- predict(oridinal_logit_m, newdata=x.test)
+
+table(y.train, predict(oridinal_logit_m, newdata=x.train), dnn=c("Actual","Predicted"))
+table(y.test, orid.logit.pred, dnn=c("Actual","Predicted"))
+
+mean(predict(oridinal_logit_m, newdata=x.train)== y.train) #학습데이터 정확도
+mean(orid.logit.pred==y.test) #검증데이터 정확도
+
+
+###########################################################################################################################
+set.seed(NULL)
+# knn
+library(class)
+library(gmodels)
+#set.seed(123)
+knn <- knn(train = x.train, test = x.test, cl = y.train, k = 3)
+knn
+
+#CrossTable(x=y.test, y = knn, prob.chisq=FALSE)
+
+knn.order <-  factor(knn, )
 accuracy_1 <- sum(knn == y.test) / length(y.test)
 accuracy_1
 
@@ -82,7 +119,7 @@ confusionMatrix(as.factor(knn), as.factor(y.test))
 accuracy_k <- NULL
 
 for (kk in c(1:51)){
-  set.seed(123)
+  #set.seed(123)
   knn_k <- knn(train = x.train, test=x.test, cl=y.train, k = kk)
   accuracy_k <- c(accuracy_k, sum(knn_k == y.test)/length(y.test))
 }
@@ -91,5 +128,14 @@ vaild_k <- data.frame(k=c(1:51), accuracy= accuracy_k)
 
 plot(formula = accuracy ~ k, data = vaild_k, type="o", pch=20, main= "validation - optimal k")
 
-vaild_k[1:10,]
+vaild_k[1:30,]
 
+prop.table(table(y.train))
+prop.table(table(y.test))
+
+
+# csv 파일 만들기
+#makecsv <- dataset.pca.df
+#makecsv <- cbind(makecsv, dataset[,c(94,95,96,97)])
+#makecsv
+#write.csv(makecsv,file="C:/Users/82104/Desktop/상아매니지먼트/0819주성분분석30.csv")
