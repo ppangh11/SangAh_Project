@@ -1,0 +1,106 @@
+---
+title: "모델 병합"
+author: "Seunggyun Shin"
+date: '2021 8 19 '
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+setwd("C:/Users/HP/Desktop/학교자료/데이터프로젝트/상아매니지먼트/20210812")
+```
+
+```{r}
+# 데이터 불러오기
+data = read.csv("20210811.csv")
+```
+
+```{r}
+colnames(data)
+#1번 column 삭제
+dat = data[ ,-1]
+#마지막 column = 심각도
+names(dat)[ncol(dat)] = "심각도"
+```
+
+```{r}
+#train & tests
+set.seed(1234)
+a = sample(nrow(dat), 0.8*nrow(dat))
+train = dat[a, ]
+test = dat[-a, ]
+```
+
+```{r, warning=FALSE}
+#KNN
+library(class)
+
+#KNN 사용을 위한 데이터 분리
+train_x = train[,c(1:ncol(train) - 1)] #독립변수
+train_y = train[,ncol(train)] #종속변수
+
+test_x = test[,c(1:ncol(test) - 1)] #독립변수(예측용)
+test_y = test[,ncol(test)] #종속변수(예측용)
+
+#KNN 적용하기
+knn_model <- knn(train = train_x, test = test_x, cl = train_y, k = 3) #KNN 예측 벡터
+
+#KNN 정확도
+library(caret)
+library(e1071)
+confusionMatrix(as.factor(knn_model), as.factor(test_y))
+```
+
+```{r}
+#Multinomial logistic regression
+#모델생성(변수 선택시 AIC/BIC 사용)
+library(nnet)
+model_Mlog = multinom(심각도 ~ ., data = train)
+```
+
+```{r}
+exp(coef(model_Mlog))
+head(round(fitted(model_Mlog), 2))
+```
+
+```{r}
+#예측 및 정확도
+Mlog_predict = predict(model, newdata = test, "class") #예측 벡터 생성
+library(caret)
+library(e1071)
+confusionMatrix(as.factor(Mlog_predict), as.factor(test_y))
+```
+
+```{r}
+#Decision tree
+#library(tree)
+#model_tree <- tree(심각도 ~., data = train)
+#par("mar")
+#par(mar = c(1, 1, 1, 1))
+#treepred <- predict(model_tree, test, type='class')
+#confusionMatrix(treepred, test$심각도)
+
+
+
+library(party)
+
+partymod <- ctree(심각도~., data = train)
+plot(partymod)
+
+partypred <- predict(partymod, test)
+
+confusionMatrix(partypred, test$심각도)
+```
+```{r}
+comb = data.frame(knn_model, Mlog_predict, partypred)
+```
+
+```{r}
+comb[,4] = apply(comb,1,function(x) names(which.max(table(x))))
+
+confusionMatrix(as.factor(comb[,4]), test$심각도)
+```
+
