@@ -98,6 +98,7 @@ table(y.test, orid.logit.pred, dnn=c("Actual","Predicted"))
 mean(predict(oridinal_logit_m, newdata=x.train)== y.train) #학습데이터 정확도
 mean(orid.logit.pred==y.test) #검증데이터 정확도
 
+head(round(fitted(oridinal_logit_m), 2)) # 각 범주별 확률값
 
 ###########################################################################################################################
 set.seed(NULL)
