@@ -1,54 +1,5 @@
 setwd("C:/Users/82108/Desktop/상아매니지먼트")
 
-#데이터 불러오기
-#library(readxl)
-carrot <- read.csv("20210811.csv")
-
-#데이터 나누기
-set.seed(123)
-train <- sample(nrow(carrot), 0.8*nrow(carrot)) #훈련데이터 예측변수
-y.train <- carrot[train,]$type #훈련데이터용 결과변수
-y.test <- carrot[-train,]$type #검정데이터용 결과변수
-table(y.train)
-table(y.test)
-
-prop.table(table(y.train))
-prop.table(table(y.test))
-
-
-#예측변수를 범주형 변수로 만드는 함수
-toFactor <- function(x) {
-  x <- ifelse(x > 0, 1, 0)
-  x <- factor(x, level=c(0,1))
-  return(x)
-}
-
-project_xy.dtm <- apply(carrot, MARGIN=2, toFactor)
-project_xy.dtm
-
-x.train <- project_xy.dtm[train,]
-x.test <- project_xy.dtm[-train,]
-
-
-
-#KNN 적용하기
-#install.packages("class")
-library(class)
-
-set.seed(1234)
-knn_1 <- knn(train = x.train, test = x.test, cl = y.train, k = 1)
-
-#결과보기
-#install.packages("caret")
-#install.packages("e1071")
-library(caret)
-library(e1071)
-confusionMatrix(as.factor(knn_1), as.factor(y.test))
-
-
-
-###############박하림 코드수정########################
-
 data1 <- read.csv("20210811.csv")[,-1]
 #data<-read.csv("binary_df.csv")[,44]  #금액심각도  0.7547
 data<-read.csv("binary_df.csv")[,42]  #일정심각도  0.816
