@@ -109,14 +109,18 @@ mtry.val = random.mtry[which.max(random.predict)]
 randomforest <- randomForest(y.train ~ ., ntree = ntree.val, mtry = mtry.val, data=x.train, importance=T)
 
 
-randomforest <- randomForest(y.train ~ ., ntree = 500, mtry = 26, data=x.train, importance=T)
+
+? randomForest
+
+#randomforest <- randomForest(y.train ~ ., ntree = 500,maxnodes=50, minsplit=30, mtry = 26, data=x.train, importance=T)
+# 다음에 할 일: maxnodes, minsplit 조정해서 과적합 해결하기
 
 #변수 중요도를 확인할 수 있는 코드인데 나중에 보고서에 해석, 인사이트 넣을 때 도움 될 것 같아요.
 importance(randomforest)
 varImpPlot(randomforest, type=2,pch=19, col=1, cex=1, main="")
 
 #모델 정보확인
-randomforest
+str(randomforest)
 
 #학습데이터 정확도
 predtrain <- predict(randomforest, x.train, type='class') 
