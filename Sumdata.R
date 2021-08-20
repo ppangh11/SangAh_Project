@@ -11,7 +11,7 @@ names(newdata)[c(1,2,3,4,5,6,7,8)] = c("프로젝트분야","규모및용량","L
 
 
 set.seed(123)
-y_data <- newdata[,101]
+y_data <- newdata[,103]
 x_data <- newdata[,c(-101,-102,-103,-104)]
 
 
@@ -70,21 +70,22 @@ hist(x_data$설계기간)
 str(x_data)
 
 # 가변수(dummy 변수화)
-library(dummies)
+#library(dummies)
 
-dummy.data.frame(x_data)
+#dummy.data.frame(x_data)
 
 
 # 모델링 (랜덤포레스트)
 
 # train, test 데이터 분리
-train <- sample(nrow(project_xy), 0.8*nrow(project_xy)) #훈련데이터 예측변수
+train <- sample(nrow(project_df), 0.8*nrow(project_df)) #훈련데이터 예측변수
 x.train <- x_data[train,]
 x.test <- x_data[-train,]
 
 y.train <- y_data[train]
 y.test <- y_data[-train]
 
+y.train <- factor(y.train)
 
 # randomForest 적용
 library(randomForest)
