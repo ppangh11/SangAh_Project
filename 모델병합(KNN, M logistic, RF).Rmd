@@ -1,0 +1,109 @@
+---
+title: "20210820 모델 병합"
+author: "Seunggyun Shin"
+date: '2021 8 20 '
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+setwd("C:/Users/HP/Desktop/학교자료/데이터프로젝트/상아매니지먼트/20210819")
+```
+
+```{r}
+#data
+data = read.csv("0819deleteNum.csv")
+data = data[ ,-1]
+```
+
+```{r}
+#train & test set
+set.seed(1234)
+a = sample(nrow(data), 0.8*nrow(data))
+train = data[a, ]
+test = data[-a, ]
+```
+
+```{r}
+#89 : 일정 범주, 90 :  일정 수치
+#KNN(일정심각도 예측)
+library(class)
+
+#KNN 사용을 위한 데이터 분리
+train_x = train[,c(1:88)] #독립변수
+train_y = train[,89] #종속변수
+
+test_x = test[,c(1:88)] #독립변수(예측용)
+test_y = test[,89] #종속변수(예측용)
+
+#KNN 적용하기
+
+x = seq(3, 50, 2)
+for (i in seq(3, 50,2)){
+  knn_model = knn(train = train_x, test = test_x, cl = train_y, k = i)
+  knn_confu = confusionMatrix(as.factor(knn_model), as.factor(test_y))
+  x = c(x, knn_confu$overall[1])
+}
+x
+#k = 3일때 가장 정확
+
+knn_model <- knn(train = train_x, test = test_x, cl = train_y, k = 3) #KNN 예측 벡터
+
+#KNN 정확도
+library(caret)
+library(e1071)
+confusionMatrix(as.factor(knn_model), as.factor(test_y))
+```
+
+```{r}
+#Multinomial logistic regression
+#모델생성(변수 선택시 AIC/BIC 사용)
+library(nnet)
+colnames(train)
+model_Mlog = multinom(일정심각도.범주. ~ . -일정심각도.수치. - 금액심각도.범주. - 금액심각도.수치. , data = train)
+summary(model_Mlog)
+```
+
+```{r}
+exp(coef(model_Mlog))
+head(round(fitted(model_Mlog), 2))
+```
+
+```{r}
+#예측 및 정확도
+Mlog_predict = predict(model_Mlog, newdata = test, "class") #예측 벡터 생성
+library(caret)
+library(e1071)
+confusionMatrix(as.factor(Mlog_predict), as.factor(test_y))
+```
+
+```{r, warning=FALSE}
+#Random Forest
+library(randomForest)
+model_RF = randomForest(일정심각도.범주. ~ . -일정심각도.수치. - 금액심각도.범주. - 금액심각도.수치., data = train, importance = T, ntree = 500, mtry = 6)
+```
+
+```{r}
+pred_RF = predict(model_RF, test, type = 'class')
+confusionMatrix(pred_RF, test_y)
+```
+
+```{r}
+comb = data.frame(knn_model, Mlog_predict, pred_RF)
+```
+
+```{r}
+comb[ ,4] = apply(comb,1,function(x) names(which.max(table(x))))
+```
+
+```{r}
+head(comb)
+```
+
+```{r}
+confusionMatrix(as.factor(comb[,4]), test$일정심각도.범주.)
+```
+
