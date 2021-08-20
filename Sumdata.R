@@ -5,19 +5,19 @@ library(readxl)
 dataset <- read.csv("0819original.csv")
 project_df <- as.data.frame(read_excel("codeless.xlsx",skip=5)) #데이터불러오기
 
-newdata <- cbind(project_df[,c(5,6,9,16)],dataset[,-1])
+newdata <- cbind(project_df[,c(5,6,9,16,12)],dataset[,-1])
 newdata
 
 #발주처를 넣을까요, 말까요
 
-names(newdata)[c(1,2,3,4)] = c("프로젝트분야","플랜트종류","Location","설계변경공종")
+names(newdata)[c(1,2,3,4)] = c("프로젝트분야","플랜트종류","Location","설계변경공종","발주처")
 
 #write.csv(newdata,file="C:/Users/82104/Desktop/상아매니지먼트/0820Sumdata.csv")
 
 
 set.seed(123)
-y_data <- newdata[,97]
-x_data <- newdata[,c(-97,-98,-99,-100)]
+y_data <- newdata[,98]
+x_data <- newdata[,c(-98,-99,-100,-101)]
 
 
 str(x_data)
@@ -27,11 +27,12 @@ x_data$프로젝트분야 <- as.factor(x_data$프로젝트분야)
 x_data$플랜트종류 <- as.factor(x_data$플랜트종류)
 x_data$Location <- as.factor(x_data$Location)
 x_data$설계변경공종 <-as.factor(x_data$설계변경공종)
+x_data$발주처 <-as.factor(x_data$발주처)
 
 
 
 
-for (i in c(5:96)){
+for (i in c(6:97)){
   x_data[,i] <- as.factor(x_data[,i])
 }
 
@@ -107,9 +108,12 @@ mtry.val = random.mtry[which.max(random.predict)]
 ## 최적화된 파라미터 값을 가진 랜덤포레스트 모델 생성
 randomforest <- randomForest(y.train ~ ., ntree = ntree.val, mtry = mtry.val, data=x.train, importance=T)
 
+
+randomforest <- randomForest(y.train ~ ., ntree = 500, mtry = 26, data=x.train, importance=T)
+
 #변수 중요도를 확인할 수 있는 코드인데 나중에 보고서에 해석, 인사이트 넣을 때 도움 될 것 같아요.
-#importance(randomforest)
-#varImpPlot(randomforest, type=2,pch=19, col=1, cex=1, main="")
+importance(randomforest)
+varImpPlot(randomforest, type=2,pch=19, col=1, cex=1, main="")
 
 #모델 정보확인
 randomforest
