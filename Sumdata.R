@@ -5,19 +5,19 @@ library(readxl)
 dataset <- read.csv("0819original.csv")
 project_df <- as.data.frame(read_excel("codeless.xlsx",skip=5)) #데이터불러오기
 
-newdata <- cbind(project_df[,c(5,6,9,10,16)],dataset[,-1])
+newdata <- cbind(project_df[,c(5,6,9,16)],dataset[,-1])
 newdata
 
 #발주처를 넣을까요, 말까요
 
-names(newdata)[c(1,2,3,4,5)] = c("프로젝트분야","플랜트종류","Location","총공사비","설계변경공종")
+names(newdata)[c(1,2,3,4)] = c("프로젝트분야","플랜트종류","Location","설계변경공종")
 
 #write.csv(newdata,file="C:/Users/82104/Desktop/상아매니지먼트/0820Sumdata.csv")
 
 
 set.seed(123)
-y_data <- newdata[,98]
-x_data <- newdata[,c(-98,-99,-100,-101)]
+y_data <- newdata[,97]
+x_data <- newdata[,c(-97,-98,-99,-100)]
 
 
 str(x_data)
@@ -31,33 +31,10 @@ x_data$설계변경공종 <-as.factor(x_data$설계변경공종)
 
 
 
-for (i in c(6:97)){
+for (i in c(5:96)){
   x_data[,i] <- as.factor(x_data[,i])
 }
 
-# 수치형 변수: 총 공사비, 설계비용, 설계기간
-summary(x_data$총공사비)
-boxplot(x_data$총공사비)
-hist(x_data$총공사비)
-
-
-
-#정규화는 기존 데이터가 정규성을 따르지 않아 포기.
-#z.총공사비 = scale(x_data$총공사비)
-
-#hist(z.총공사비)
-
-
-# Min-Max
-normalize <- function(x){
-  return((x-min(x))/(max(x)-min(x)))
-}
-
-x_data$총공사비 <- normalize(x_data$총공사비)
-
-hist(x_data$총공사비)
-
-str(x_data)
 
 # 가변수(dummy 변수화)
 #library(dummies)
@@ -168,4 +145,3 @@ mean(predtest==y.test)
 # 배깅과 유사하지만, 붓스트랩 표본을 구성하는 재표본 과정에서 
 # 분류가 잘못된 데이터에 더 큰 가중치/확률을 부여하여 표본을 추출함
 # 포인트: 잘못된 데이터 => 더 큰 가중치/확률을 부여 => 표본 추출
- 
