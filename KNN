@@ -30,3 +30,41 @@ library(e1071)
 confusionMatrix(as.factor(knn_1), as.factor(test_dat[,85]))
 
 
+##################original file#####################
+setwd("C:/Users/82108/Desktop/상아매니지먼트")
+
+data <- read.csv("0819original.csv")[,-1]
+
+
+colnames(data)
+
+train <- sample(nrow(data), 0.8*nrow(data)) #랜덤으로 숫자배열
+train_dat <- data[train,] # traindata
+x.train <- train_dat[,c(1:92)] #traindata(독립변수)
+num.y.train <- train_dat[,96] #금액 #traindata(수치형종속변수)
+cat.y.train <- train_dat[,95] #금액 #traindata(범주형종속변수)
+
+#num.y.train <- train_dat[,94] #일정 #traindata(수치형종속변수)
+#cat.y.train <- train_dat[,93] #일정 #traindata(범주형종속변수)
+
+
+test_dat <- data[-train,] #testdata
+x.test <- test_dat[,c(1:92)] #testdata(종속변수없는거)
+
+
+#KNN 적용하기
+#install.packages("class")
+
+library(class)
+
+set.seed(123)
+knn_1 <- knn(train = x.train, test = x.test, cl = cat.y.train, k = 3)
+
+#결과보기
+#install.packages("caret")
+#install.packages("e1071")
+library(caret)
+library(e1071)
+confusionMatrix(as.factor(knn_1), as.factor(test_dat[,95]))
+
+
