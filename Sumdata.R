@@ -117,16 +117,16 @@ xgb_preds
 #xgb_preds$ActualClass
 
 #5. Accuracy
-#학습데이터 정확도 >> 0.8736
+#학습데이터 정확도 >> 0.8736 (금액>>0.8360)
 train.acc <- sum(train.preds$PredictedClass == train.preds$ActualClass) / nrow(train.preds)
 train.acc
-#검증데이터 정확도 >> 0.8447
+#검증데이터 정확도 >> 0.8447 (금액>>0.7913)
 accuracy <- sum(xgb_preds$PredictedClass == xgb_preds$ActualClass) / nrow(xgb_preds)
 accuracy
 
 confusionMatrix(factor(xgb_preds$ActualClass), factor(xgb_preds$PredictedClass))
 
-#6. F1 score >> 0.5333
+#6. F1 score >> 0.5333 (금액>>0.7350)
 #install.packages("MLmetrics")
 library(MLmetrics)
 F1_Score(factor(xgb_preds$ActualClass), factor(xgb_preds$PredictedClass))
