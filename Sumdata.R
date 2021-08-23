@@ -1,21 +1,20 @@
-setwd("C:/Users/82104/Desktop/상아매니지먼트")
+#xgboost_sum : 일정만
 
 library(readxl)
 
-dataset <- read.csv("0819original.csv")
+dataset <- read.csv("./0819original.csv")
 project_df <- as.data.frame(read_excel("codeless.xlsx",skip=5)) #데이터불러오기
 
-newdata <- cbind(project_df[,c(5,6,9,16,12)],dataset[,-1])
+newdata <- cbind(project_df[,c(5,6,9,12,16)],dataset[,-1])
 newdata
 
-#발주처를 넣을까요, 말까요
+#발주처를 넣을까요 네
 
-names(newdata)[c(1,2,3,4)] = c("프로젝트분야","플랜트종류","Location","설계변경공종","발주처")
-
-#write.csv(newdata,file="C:/Users/82104/Desktop/상아매니지먼트/0820Sumdata.csv")
+names(newdata)[c(1,2,3,4,5)] = c("프로젝트분야","플랜트종류","Location","발주처","설계변경공종")
 
 
 set.seed(123)
+newdata$일정심각도.범주. <- ifelse(newdata$일정심각도.범주.=="안전",0, ifelse(newdata$일정심각도.범주.=="경계",1,2))
 y_data <- newdata[,98]
 x_data <- newdata[,c(-98,-99,-100,-101)]
 
@@ -26,16 +25,21 @@ str(x_data)
 x_data$프로젝트분야 <- as.factor(x_data$프로젝트분야)
 x_data$플랜트종류 <- as.factor(x_data$플랜트종류)
 x_data$Location <- as.factor(x_data$Location)
+x_data$발주처 <- as.factor(x_data$발주처)
 x_data$설계변경공종 <-as.factor(x_data$설계변경공종)
-x_data$발주처 <-as.factor(x_data$발주처)
 
-
-
+str(x_data)
 
 for (i in c(6:97)){
-  x_data[,i] <- as.factor(x_data[,i])
+  x_data[,i] <- factor(x_data[,i])
+}
+# numeric으로 바꿈 -> xgb modeling 할 때 데이터 numeric으로 넣어야 해서
+for (i in c(1:97)){
+  x_data[,i] <- as.numeric(factor(x_data[,i]))
 }
 
+
+str(x_data)
 
 # 가변수(dummy 변수화)
 #library(dummies)
@@ -43,7 +47,14 @@ for (i in c(6:97)){
 #dummy.data.frame(x_data)
 
 
-# 모델링 (랜덤포레스트)
+# 모델링 (XGBoost)
+
+library(xgboost)
+library(dplyr)
+library(caret)
+#install.packages("caTools")
+library(caTools)
+
 
 # train, test 데이터 분리
 train <- sample(nrow(project_df), 0.8*nrow(project_df)) #훈련데이터 예측변수
@@ -53,99 +64,70 @@ x.test <- x_data[-train,]
 y.train <- y_data[train]
 y.test <- y_data[-train]
 
-y.train <- factor(y.train)
-
-## randomForest 적용
-
-# ntree: 생성하는 나무의 수
-# mtry: 각 노드 설정 시 설명변수 후보 개수(후보군)
-# replace=TRUE(기본값): 복원추출 가능 여부
-# importance : 변수중요도에 다라 모델을 생성. 변수가 많은 데이터는 변수중요도에 따라 error rate가 크게 변하기 때문에 T로 설정
-# 다른 옵션도 있긴한데 서치해보니 보통 안 쓰는 것 같아요.
+#y.train <- factor(y.train)
+#y.test <- factor(y.test)
 
 
-library(randomForest)
+#3. modeling
+xgb_train <- xgb.DMatrix(data = as.matrix(x.train), label = y.train)
+xgb_test <- xgb.DMatrix(data = as.matrix(x.test), label = y.test)
 
+xgb_params <- list(
+  booster = 'gbtree',
+  eta = 0.01,
+  max_depth = 8,
+  gamma = 4,
+  subsample = 0.75,
+  colsample_bytree = 1,
+  objective = "multi:softprob",
+  eval_metric = "mlogloss",
+  num_class = 3
+)
 
-## 최적의 파라미터 찾기
+xgb_model <- xgb.train(
+  params = xgb_params,
+  data = xgb_train,
+  nrounds = 5000,
+  verbose = 1
+)
+xgb_model
 
-# c() 안에 확인해보고 싶은 파라미터 넣으면 됩니다
-param.ntree <- c(100,200,300,400,500,600,700,800,900,1000)
-param.mtry <- c(10:30)
+#4. predictions & evaluations
+#학습데이터 예측&평가
+train.preds <- predict(xgb_model, as.matrix(x.train), reshape = T)
+train.preds <- as.data.frame(train.preds)
+colnames(train.preds) <- c("안전","경계","심각")
+train.preds
 
-# 랜덤포레스트의 정보를 담을 벡터 생성
-random.ntree <- numeric(length(param.ntree)*length(param.mtry)) # ntree
-random.mtry <- numeric(length(param.ntree)*length(param.mtry)) # mtry 
-random.predict <- numeric(length(param.ntree)*length(param.mtry)) # 정확도 
+train.preds$PredictedClass <- apply(train.preds, 1, function(y) colnames(train.preds)[which.max(y)])
+train.preds$ActualClass <- c("안전","경계","심각")[y.train + 1]
+train.preds
 
+#검증데이터 예측&평가
+xgb_preds <- predict(xgb_model, as.matrix(x.test), reshape=TRUE)
+xgb_preds <- as.data.frame(xgb_preds)
+colnames(xgb_preds) <- c("안전","경계","심각")
+xgb_preds
 
-a=1 #벡터 인덱스를 위한 변수 a
+xgb_preds$PredictedClass <- apply(xgb_preds, 1, function(y) colnames(xgb_preds)[which.max(y)])
+xgb_preds$ActualClass <- c("안전","경계","심각")[y.test + 1]
+xgb_preds
 
-for (i in param.ntree){
-  cat('\n','ntree =',i,": ") #진행률 보고 싶으면 주석 풀기
-  for(j in param.mtry){
-    cat('**') # 얘도 마찬가지로 진행률
-    op.randomforest <- randomForest(y.train ~ .,data=x.train, importance=T, ntree=i, mtry=j, na.action= na.omit)
-    
-    # 생성된 모델의 정보를 벡터에 저장
-    
-    predtest <- predict(op.randomforest, x.test, type='class')
-    
-    random.ntree[a] <- op.randomforest$ntree
-    random.mtry[a] <- op.randomforest$mtry
-    random.predict[a] <- mean(predtest==y.test)
-    
-    a= a+1
-  }
-}
+#xgb_preds$PredictedClass
+#xgb_preds$ActualClass
 
+#5. Accuracy
+#학습데이터 정확도 >> 0.8736
+train.acc <- sum(train.preds$PredictedClass == train.preds$ActualClass) / nrow(train.preds)
+train.acc
+#검증데이터 정확도 >> 0.8447
+accuracy <- sum(xgb_preds$PredictedClass == xgb_preds$ActualClass) / nrow(xgb_preds)
+accuracy
 
+confusionMatrix(factor(xgb_preds$ActualClass), factor(xgb_preds$PredictedClass))
 
-# 정확도가 최대인 랜덤포레스트 모델의 파라미터값 저장
-ntree.val = random.ntree[which.max(random.predict)]
-mtry.val = random.mtry[which.max(random.predict)]
+#6. F1 score >> 0.5333
+#install.packages("MLmetrics")
+library(MLmetrics)
+F1_Score(factor(xgb_preds$ActualClass), factor(xgb_preds$PredictedClass))
 
-## 최적화된 파라미터 값을 가진 랜덤포레스트 모델 생성
-randomforest <- randomForest(y.train ~ ., ntree = ntree.val, mtry = mtry.val, data=x.train, importance=T)
-
-
-randomforest <- randomForest(y.train ~ ., ntree = 500, mtry = 26, data=x.train, importance=T)
-
-#변수 중요도를 확인할 수 있는 코드인데 나중에 보고서에 해석, 인사이트 넣을 때 도움 될 것 같아요.
-importance(randomforest)
-varImpPlot(randomforest, type=2,pch=19, col=1, cex=1, main="")
-
-#모델 정보확인
-randomforest
-
-#학습데이터 정확도
-predtrain <- predict(randomforest, x.train, type='class') 
-table(predtrain, y.train, dnn=c("Actual","Predicted")) 
-mean(predtrain==y.train)
-
-#검증데이터 정확도
-predtest <- predict(randomforest, x.test, type='class')
-table(predtest, y.test, dnn=c("Actual","Predicted"))
-mean(predtest==y.test)
-
-
-
-# 참고
-
-# 배깅(boostrap aggregation)
-# 붓스트렙을 여러번해서, 여러 훈련 세트를 만들고, 각각의 훈련세트에 모델을 적용해서
-# 그 결과값을 평균 냄으로써, 분산을 줄이는 기법
-# 단일 훈련자료로부터 반복해서 표본들을 샘플링해 n개의 다른 붓스트립된 훈련 자료를 생성
-# n개의 훈련자료를 사용하여 예측모델을 n개 만들고 그 예측 결과들을 평균 냄(통계학적으로 분산을 줄여준다고 함)
-# 의사결정 나무는 높은 분산이 문제가 되는데
-# (다른 말로 트리의 분할이 데이터에 크게 의존하여 훈련데이터의 작은 변화에도 결정 로직에 튼 변화를 일으켜 불안정함.)
-# 배깅은 분산을 줄여줌으로써 성능을 향상시켜준다.
-
-# 랜덤포레스트(random forest)
-# 배깅의 일종으로 배깅과의 차이점은 설명변수도 무작위로 선택함.
-# 설명변수를 무작위로 줄임으로써 모형간의 상관관계를 줄여줌
-
-# 부스트
-# 배깅과 유사하지만, 붓스트랩 표본을 구성하는 재표본 과정에서 
-# 분류가 잘못된 데이터에 더 큰 가중치/확률을 부여하여 표본을 추출함
-# 포인트: 잘못된 데이터 => 더 큰 가중치/확률을 부여 => 표본 추출
