@@ -2,22 +2,22 @@ setwd("C:/Users/82104/Desktop/상아매니지먼트")
 
 library(readxl)
 
-dataset <- read.csv("0819original.csv")
+
+dataset <- read.csv("prob_x.csv")
 project_df <- as.data.frame(read_excel("codeless.xlsx",skip=5)) #데이터불러오기
 
-newdata <- cbind(project_df[,c(5,6,9,16,12)],dataset[,-1])
+newdata <- cbind(project_df[,c(5,6,9,16,12)],dataset[,-1],project_df[,c(23,26)])
 newdata
 
-#발주처를 넣을까요, 말까요
+names(newdata)[c(1,2,3,4,5)] = c("프로젝트분야","플랜트종류","Location","설계변경공종","발주처")
 
-names(newdata)[c(1,2,3,4)] = c("프로젝트분야","플랜트종류","Location","설계변경공종","발주처")
-
-#write.csv(newdata,file="C:/Users/82104/Desktop/상아매니지먼트/0820Sumdata.csv")
 
 
 set.seed(123)
-y_data <- newdata[,98]
-x_data <- newdata[,c(-98,-99,-100,-101)]
+y_data <- newdata[,19]  # 일정 심각도
+y_data <- newdata[,20]  # 금액 심각도
+
+x_data <- newdata[,c(-19,-20)]
 
 
 str(x_data)
@@ -29,18 +29,23 @@ x_data$Location <- as.factor(x_data$Location)
 x_data$설계변경공종 <-as.factor(x_data$설계변경공종)
 x_data$발주처 <-as.factor(x_data$발주처)
 
+# 수치형 변수: 총 공사비, 설계비용, 설계기간
 
-
-
-for (i in c(6:97)){
-  x_data[,i] <- as.factor(x_data[,i])
+# Min-Max
+normalize <- function(x){
+  return((x-min(x))/(max(x)-min(x)))
 }
 
 
-# 가변수(dummy 변수화)
-#library(dummies)
 
-#dummy.data.frame(x_data)
+for (i in range(6:18)){
+  x_data[,i] <- normalize(x_data[,i])
+}
+
+str(x_data)
+
+
+
 
 
 # 모델링 (랜덤포레스트)
@@ -85,7 +90,7 @@ for (i in param.ntree){
   cat('\n','ntree =',i,": ") #진행률 보고 싶으면 주석 풀기
   for(j in param.mtry){
     cat('**') # 얘도 마찬가지로 진행률
-    op.randomforest <- randomForest(y.train ~ .,data=x.train, importance=T, ntree=i, mtry=j, na.action= na.omit)
+    op.randomforest <- randomForest(y.train ~ .,data=x.train, maxnodes=50, minsplit=50, importance=T, ntree=i, mtry=j, na.action= na.omit)
     
     # 생성된 모델의 정보를 벡터에 저장
     
@@ -109,14 +114,18 @@ mtry.val = random.mtry[which.max(random.predict)]
 randomforest <- randomForest(y.train ~ ., ntree = ntree.val, mtry = mtry.val, data=x.train, importance=T)
 
 
-randomforest <- randomForest(y.train ~ ., ntree = 500, mtry = 26, data=x.train, importance=T)
+
+? randomForest
+
+randomforest <- randomForest(y.train ~ ., ntree = 100,maxnodes=150, minsplit=100, mtry = 11, data=x.train, importance=T)
+# 다음에 할 일: maxnodes, minsplit 조정해서 과적합 해결하기
 
 #변수 중요도를 확인할 수 있는 코드인데 나중에 보고서에 해석, 인사이트 넣을 때 도움 될 것 같아요.
 importance(randomforest)
 varImpPlot(randomforest, type=2,pch=19, col=1, cex=1, main="")
 
 #모델 정보확인
-randomforest
+str(randomforest)
 
 #학습데이터 정확도
 predtrain <- predict(randomforest, x.train, type='class') 
@@ -128,24 +137,6 @@ predtest <- predict(randomforest, x.test, type='class')
 table(predtest, y.test, dnn=c("Actual","Predicted"))
 mean(predtest==y.test)
 
-
-
-# 참고
-
-# 배깅(boostrap aggregation)
-# 붓스트렙을 여러번해서, 여러 훈련 세트를 만들고, 각각의 훈련세트에 모델을 적용해서
-# 그 결과값을 평균 냄으로써, 분산을 줄이는 기법
-# 단일 훈련자료로부터 반복해서 표본들을 샘플링해 n개의 다른 붓스트립된 훈련 자료를 생성
-# n개의 훈련자료를 사용하여 예측모델을 n개 만들고 그 예측 결과들을 평균 냄(통계학적으로 분산을 줄여준다고 함)
-# 의사결정 나무는 높은 분산이 문제가 되는데
-# (다른 말로 트리의 분할이 데이터에 크게 의존하여 훈련데이터의 작은 변화에도 결정 로직에 튼 변화를 일으켜 불안정함.)
-# 배깅은 분산을 줄여줌으로써 성능을 향상시켜준다.
-
-# 랜덤포레스트(random forest)
-# 배깅의 일종으로 배깅과의 차이점은 설명변수도 무작위로 선택함.
-# 설명변수를 무작위로 줄임으로써 모형간의 상관관계를 줄여줌
-
-# 부스트
-# 배깅과 유사하지만, 붓스트랩 표본을 구성하는 재표본 과정에서 
-# 분류가 잘못된 데이터에 더 큰 가중치/확률을 부여하여 표본을 추출함
-# 포인트: 잘못된 데이터 => 더 큰 가중치/확률을 부여 => 표본 추출
+library(MLmetrics)
+F1_Score(predtrain,y.train)
+F1_Score(predtest, y.test)
