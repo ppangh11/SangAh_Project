@@ -15,7 +15,7 @@ names(newdata)[c(1,2,3,4,5)] = c("프로젝트분야","플랜트종류","Locatio
 
 set.seed(123)
 y_data <- newdata[,19]  # 일정 심각도
-y_data <- newdata[,20]  # 금액 심각도
+#y_data <- newdata[,20]  # 금액 심각도
 
 x_data <- newdata[,c(-19,-20)]
 
