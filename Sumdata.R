@@ -1,151 +1,86 @@
-setwd("C:/Users/82104/Desktop/상아매니지먼트")
-
+#Naive Bayes
+#1. 데이터 불러오기
 library(readxl)
 
-dataset <- read.csv("0819original.csv")
-project_df <- as.data.frame(read_excel("codeless.xlsx",skip=5)) #데이터불러오기
+cdata <- as.data.frame(read_excel("data_final.xlsx")) #데이터불러오기
 
-newdata <- cbind(project_df[,c(5,6,9,16,12)],dataset[,-1])
-newdata
+cdata
 
-#발주처를 넣을까요, 말까요
-
-names(newdata)[c(1,2,3,4)] = c("프로젝트분야","플랜트종류","Location","설계변경공종","발주처")
-
-#write.csv(newdata,file="C:/Users/82104/Desktop/상아매니지먼트/0820Sumdata.csv")
-
-
+library(dplyr)
 set.seed(123)
-y_data <- newdata[,98]
-x_data <- newdata[,c(-98,-99,-100,-101)]
+cdata <- cdata[,c(-1,-99,-100,-102)]
+cdata <- rename(cdata, "x.1"="금액심각도.범주." )
+#cdata <- cdata[,c(-1,-100,-101,-102)]
+#cdata <- rename(cdata, "x.1"="일정심각도.범주." )
 
 
-str(x_data)
+#str(cdata)
 
 # 범주형 변수 : 프로젝트 분야, 규모/용량, Location, 설계변경공종, 설계변경유형
-x_data$프로젝트분야 <- as.factor(x_data$프로젝트분야)
-x_data$플랜트종류 <- as.factor(x_data$플랜트종류)
-x_data$Location <- as.factor(x_data$Location)
-x_data$설계변경공종 <-as.factor(x_data$설계변경공종)
-x_data$발주처 <-as.factor(x_data$발주처)
+cdata$프로젝트분야 <- as.factor(cdata$프로젝트분야)
+cdata$플랜트종류 <- as.factor(cdata$플랜트종류)
+cdata$Location <- as.factor(cdata$Location)
+cdata$발주처 <- as.factor(cdata$발주처)
+cdata$설계변경공종 <-as.factor(cdata$설계변경공종)
 
+#str(cdata)
 
-
-
-for (i in c(6:97)){
-  x_data[,i] <- as.factor(x_data[,i])
+for (i in c(6:98)){
+  cdata[,i] <- factor(cdata[,i])
 }
 
+#str(cdata)
 
-# 가변수(dummy 변수화)
-#library(dummies)
+#1-1. 데이터 확인
+head(cdata)
+str(cdata)
+dim(cdata)
 
-#dummy.data.frame(x_data)
+label_column = 98 #dim으로 확인 후 마지막 컬럼 번호 넣어줌. 데이터 확인
+lastword_col = label_column - 1
 
+#1-2. 일정심각도:안전,경계,심각->1,2,3 으로 대체
+cdata$x.1 <- ifelse(cdata$x.1=="안전",1, ifelse(cdata$x.1=="경계",2,3))
 
-# 모델링 (랜덤포레스트)
+#2. shuffle, sample, train-test
+set.seed(123)
+idx <- sample(x = c("train", "test"), size = nrow(cdata),
+              replace=TRUE, prob = c(8,2))
+cdata$idx <- idx
+#2-1. train data : label, idx 제외
+train <- cdata[cdata$idx=="train",][,1:lastword_col]
+head(train, 3)
+#2-2. train data label :label 컬럼 따로 뽑기
+train_label <- cdata[cdata$idx =="train",][,label_column]
+#2-3. test data
+test <- cdata[cdata$idx=="test",][,1:lastword_col]
+test_label<-cdata[cdata$idx=="test",][,label_column]
 
-# train, test 데이터 분리
-train <- sample(nrow(project_df), 0.8*nrow(project_df)) #훈련데이터 예측변수
-x.train <- x_data[train,]
-x.test <- x_data[-train,]
+str(train)
 
-y.train <- y_data[train]
-y.test <- y_data[-train]
+#5. NaiveBayes
+##install.packages('e1071')
+library(e1071)
+#5-1. 모델생성
+model <-naiveBayes(train, train_label, laplace = 1)
+#5-2. 예상값 출력
+result <- predict(model, test)
+#5-3. 예상값과 실제값 비교
+head(data.frame(test_label, result), 10)
+#5-4. 동일여부 파악 위해 예상값(result) factor에서 numeric으로 변환
+result <- as.numeric(result)
+#5-5. 같으면 'O', 다르면 'X'
+prop.table(table(ifelse(test_label == result, 'O','X')))
 
-y.train <- factor(y.train)
+#-------------
+#이원교차표
+#library(gmodels)
+#install.packages("gmodels")
+#va <- CrossTable(result, test_label)
+#다시 정확도
+#print(paste0(round(sum(diag(va$prop.tbl))*100, 3), '%'))
 
-## randomForest 적용
+#f1score
+library(MLmetrics)
+F1_Score(result, test_label)
 
-# ntree: 생성하는 나무의 수
-# mtry: 각 노드 설정 시 설명변수 후보 개수(후보군)
-# replace=TRUE(기본값): 복원추출 가능 여부
-# importance : 변수중요도에 다라 모델을 생성. 변수가 많은 데이터는 변수중요도에 따라 error rate가 크게 변하기 때문에 T로 설정
-# 다른 옵션도 있긴한데 서치해보니 보통 안 쓰는 것 같아요.
-
-
-library(randomForest)
-
-
-## 최적의 파라미터 찾기
-
-# c() 안에 확인해보고 싶은 파라미터 넣으면 됩니다
-param.ntree <- c(100,200,300,400,500,600,700,800,900,1000)
-param.mtry <- c(10:30)
-
-# 랜덤포레스트의 정보를 담을 벡터 생성
-random.ntree <- numeric(length(param.ntree)*length(param.mtry)) # ntree
-random.mtry <- numeric(length(param.ntree)*length(param.mtry)) # mtry 
-random.predict <- numeric(length(param.ntree)*length(param.mtry)) # 정확도 
-
-
-a=1 #벡터 인덱스를 위한 변수 a
-
-for (i in param.ntree){
-  cat('\n','ntree =',i,": ") #진행률 보고 싶으면 주석 풀기
-  for(j in param.mtry){
-    cat('**') # 얘도 마찬가지로 진행률
-    op.randomforest <- randomForest(y.train ~ .,data=x.train, importance=T, ntree=i, mtry=j, na.action= na.omit)
-    
-    # 생성된 모델의 정보를 벡터에 저장
-    
-    predtest <- predict(op.randomforest, x.test, type='class')
-    
-    random.ntree[a] <- op.randomforest$ntree
-    random.mtry[a] <- op.randomforest$mtry
-    random.predict[a] <- mean(predtest==y.test)
-    
-    a= a+1
-  }
-}
-
-
-
-# 정확도가 최대인 랜덤포레스트 모델의 파라미터값 저장
-ntree.val = random.ntree[which.max(random.predict)]
-mtry.val = random.mtry[which.max(random.predict)]
-
-## 최적화된 파라미터 값을 가진 랜덤포레스트 모델 생성
-randomforest <- randomForest(y.train ~ ., ntree = ntree.val, mtry = mtry.val, data=x.train, importance=T)
-
-
-randomforest <- randomForest(y.train ~ ., ntree = 500, mtry = 26, data=x.train, importance=T)
-
-#변수 중요도를 확인할 수 있는 코드인데 나중에 보고서에 해석, 인사이트 넣을 때 도움 될 것 같아요.
-importance(randomforest)
-varImpPlot(randomforest, type=2,pch=19, col=1, cex=1, main="")
-
-#모델 정보확인
-randomforest
-
-#학습데이터 정확도
-predtrain <- predict(randomforest, x.train, type='class') 
-table(predtrain, y.train, dnn=c("Actual","Predicted")) 
-mean(predtrain==y.train)
-
-#검증데이터 정확도
-predtest <- predict(randomforest, x.test, type='class')
-table(predtest, y.test, dnn=c("Actual","Predicted"))
-mean(predtest==y.test)
-
-
-
-# 참고
-
-# 배깅(boostrap aggregation)
-# 붓스트렙을 여러번해서, 여러 훈련 세트를 만들고, 각각의 훈련세트에 모델을 적용해서
-# 그 결과값을 평균 냄으로써, 분산을 줄이는 기법
-# 단일 훈련자료로부터 반복해서 표본들을 샘플링해 n개의 다른 붓스트립된 훈련 자료를 생성
-# n개의 훈련자료를 사용하여 예측모델을 n개 만들고 그 예측 결과들을 평균 냄(통계학적으로 분산을 줄여준다고 함)
-# 의사결정 나무는 높은 분산이 문제가 되는데
-# (다른 말로 트리의 분할이 데이터에 크게 의존하여 훈련데이터의 작은 변화에도 결정 로직에 튼 변화를 일으켜 불안정함.)
-# 배깅은 분산을 줄여줌으로써 성능을 향상시켜준다.
-
-# 랜덤포레스트(random forest)
-# 배깅의 일종으로 배깅과의 차이점은 설명변수도 무작위로 선택함.
-# 설명변수를 무작위로 줄임으로써 모형간의 상관관계를 줄여줌
-
-# 부스트
-# 배깅과 유사하지만, 붓스트랩 표본을 구성하는 재표본 과정에서 
-# 분류가 잘못된 데이터에 더 큰 가중치/확률을 부여하여 표본을 추출함
-# 포인트: 잘못된 데이터 => 더 큰 가중치/확률을 부여 => 표본 추출
